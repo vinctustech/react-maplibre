@@ -75,16 +75,16 @@ export const Home: FC = () => {
                         events: [...info.events, 'moveend'],
                       }))
                     }}
-                    onLoad={(ev) => {
+                    onLoad={async (ev) => {
                       const viewState = viewStateFromMap(ev.target)
 
                       ev.target.scrollZoom.setWheelZoomRate(1)
 
-                      // if (!ev.target.hasImage('blue-dot'))
-                      //   ev.target.loadImage(`solid-blue-15-dot.png`, (error, image) => {
-                      //     if (!error && image) ev.target.addImage('blue-dot', image)
-                      //     else console.log(error)
-                      //   })
+                      if (!ev.target.hasImage('blue-dot')) {
+                        const response = await ev.target.loadImage(`solid-blue-15-dot.png`)
+
+                        ev.target.addImage('blue-dot', response.data)
+                      }
 
                       navigate(
                         `${window.location.pathname}?latitude=${viewState.latitude}&longitude=${viewState.longitude}`
@@ -163,7 +163,7 @@ export const Home: FC = () => {
                                   [-73.5775158966358, 45.46620256775412],
                                   [-73.57352476946453, 45.46512656069532],
                                   [-73.57690435295633, 45.4639000380907],
-                                ],
+                                  ],
                               ],
                             },
                           },
