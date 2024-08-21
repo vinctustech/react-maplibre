@@ -3,7 +3,7 @@ import { LayerSpecification, GeoJSONSource } from 'maplibre-gl'
 import { useMap } from './Map'
 
 export type LayerProps = {
-  layer: LayerSpecification
+  layer: Omit<LayerSpecification, 'source'>
   source: GeoJSONSource
 }
 
