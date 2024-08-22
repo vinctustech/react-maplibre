@@ -76,18 +76,19 @@ export const Home: FC = () => {
                       }))
                     }}
                     onLoad={async (ev) => {
+                      const map = ev.target
                       const viewState = viewStateFromMap(ev.target)
 
-                      ev.target.scrollZoom.setWheelZoomRate(1)
+                      map.scrollZoom.setWheelZoomRate(1)
 
-                      if (!ev.target.hasImage('blue-dot')) {
-                        const response = await ev.target.loadImage(`solid-blue-15-dot.png`)
+                      if (!map.hasImage('blue-dot')) {
+                        const image = await map.loadImage(`solid-blue-15-dot.png`)
 
-                        ev.target.addImage('blue-dot', response.data)
+                        map.addImage('blue-dot', image.data)
                       }
 
-                      ev.target.setStyle({
-                        ...ev.target.getStyle(),
+                      map.setStyle({
+                        ...map.getStyle(),
                         transition: {
                           duration: 0,
                           delay: 0,
@@ -187,7 +188,8 @@ export const Home: FC = () => {
                             'icon-image': 'blue-dot',
                             'icon-size': 0.6,
                             'symbol-placement': 'line',
-                            'symbol-spacing': 1,
+                            'symbol-spacing': 20,
+                            'icon-allow-overlap': true,
                           },
                         }}
                         source={{
