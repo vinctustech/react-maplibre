@@ -68,7 +68,7 @@ export const Home: FC = () => {
                     zoom={14}
                     onMoveEnd={(ev) => {
                       navigate(
-                        `${window.location.pathname}?latitude=${ev.viewState.latitude}&longitude=${ev.viewState.longitude}`
+                        `${window.location.pathname}?latitude=${ev.viewState.latitude}&longitude=${ev.viewState.longitude}`,
                       )
                       setInfo((info) => ({
                         view: ev.viewState,
@@ -86,8 +86,16 @@ export const Home: FC = () => {
                         ev.target.addImage('blue-dot', response.data)
                       }
 
+                      ev.target.setStyle({
+                        ...ev.target.getStyle(),
+                        transition: {
+                          duration: 0,
+                          delay: 0,
+                        },
+                      })
+
                       navigate(
-                        `${window.location.pathname}?latitude=${viewState.latitude}&longitude=${viewState.longitude}`
+                        `${window.location.pathname}?latitude=${viewState.latitude}&longitude=${viewState.longitude}`,
                       )
                       setInfo((info) => ({
                         view: viewState,
@@ -134,7 +142,7 @@ export const Home: FC = () => {
                                 -73.57529502748406,
                                 45.46566080452946,
                                 0.5,
-                                64
+                                64,
                               ),
                             },
                           },
@@ -163,7 +171,7 @@ export const Home: FC = () => {
                                   [-73.5775158966358, 45.46620256775412],
                                   [-73.57352476946453, 45.46512656069532],
                                   [-73.57690435295633, 45.4639000380907],
-                                  ],
+                                ],
                               ],
                             },
                           },
