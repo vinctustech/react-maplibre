@@ -87,14 +87,6 @@ export const Home: FC = () => {
                         map.addImage('blue-dot', image.data)
                       }
 
-                      map.setStyle({
-                        ...map.getStyle(),
-                        transition: {
-                          duration: 0,
-                          delay: 0,
-                        },
-                      })
-
                       navigate(
                         `${window.location.pathname}?latitude=${viewState.latitude}&longitude=${viewState.longitude}`,
                       )
