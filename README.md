@@ -1,10 +1,10 @@
-## react-mapbox
+## react-maplibre
 
-**react-mapbox** is a very minimalist React.js wrapper library for the 
+**react-maplibre** is a very minimalist React.js wrapper library for the 
 [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/guides/) 
 Typescript library.
 
-Documentation can be found [here](https://vinctustech.github.io/react-mapbox/).
+Documentation can be found [here](https://vinctustech.github.io/react-maplibre/).
 
 Testing
 -------
@@ -27,4 +27,3 @@ To start the test program type:
 5. ```bash
    npm start
    ```
-   

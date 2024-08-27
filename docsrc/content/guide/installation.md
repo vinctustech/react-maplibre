@@ -4,10 +4,10 @@ Getting Started
 Installation
 ------------
 
-Using *react-mapbox* requires [React.js](https://reactjs.org/) >= 18.  The [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/guides/) library must also be installed.
+Using *react-maplibre* requires [React.js](https://reactjs.org/) >= 18.  The [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/guides/) library must also be installed.
 
 ```
-npm install mapbox-gl @vinctus/react-mapbox
+npm install maplibre-gl @vinctus/react-maplibre
 ```
 
 Example
@@ -16,8 +16,8 @@ Example
 ```javascript
 import React, { FC } from 'react'
 import ReactDOM from 'react-dom'
-import 'mapbox-gl/dist/mapbox-gl.css'
-import { Map, MapProvider, Marker } from '@vinctus/react-mapbox'
+import 'maplibre-gl/dist/maplibre-gl.css'
+import { Map, MapProvider, Marker } from '@vinctus/react-maplibre'
 
 const accessToken = '<Mapbox access token>'
 
@@ -38,5 +38,5 @@ ReactDOM.render(
 ```
 
 [= note =]
-  Stylesheet `mapbox-gl/dist/mapbox-gl.css` must be imported.
+  Stylesheet `maplibre-gl/dist/maplibre-gl.css` must be imported.
 [= /note =]

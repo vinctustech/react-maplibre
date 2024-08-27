@@ -5,7 +5,7 @@ Map
 
 ```javascript
 import React, { FC } from 'react'
-import { Map, MapProvider, Marker, GeolocateControl } from '@vinctus/react-mapbox'
+import { Map, MapProvider, Marker, GeolocateControl } from '@vinctus/react-maplibre'
 
 const accessToken = '<Mapbox access token>'
 
@@ -46,7 +46,7 @@ Error boundary fallback. If no fallback is provided, `<h1>Sorry.. there was a ma
 
 Map container id.
 
-#### `ref` RefAttributes<mapboxgl.Map | null> *(optional)*
+#### `ref` RefAttributes<maplibregl.Map | null> *(optional)*
 
 Forwarded ref.
 
@@ -92,7 +92,7 @@ The current map style default is `mapbox://styles/mapbox/streets-v11`.
 
 ### Events
 
-#### `onLoad` (e: import('mapbox-gl').MapboxEvent) => void *(optional)*
+#### `onLoad` (e: import('maplibre-gl').MapboxEvent) => void *(optional)*
 
 Mapbox `map.on('load',...)` event callback.
 

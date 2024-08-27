@@ -5,7 +5,7 @@ A component that adds a [Popup](https://docs.mapbox.com/mapbox-gl-js/api/markers
 
 ```javascript
 import React, { FC } from 'react'
-import { Map, MapProvider, Popup } from '@vinctus/react-mapbox'
+import { Map, MapProvider, Popup } from '@vinctus/react-maplibre'
 
 const accessToken = '<Mapbox access token>'
 

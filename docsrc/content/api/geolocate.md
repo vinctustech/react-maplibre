@@ -5,7 +5,7 @@ A Component that adds a [GeolocateControl](https://docs.mapbox.com/mapbox-gl-js/
 
 ```javascript
 import React, { FC } from 'react'
-import { Map, MapProvider, Marker, GeolocateControl } from '@vinctus/react-mapbox'
+import { Map, MapProvider, Marker, GeolocateControl } from '@vinctus/react-maplibre'
 
 const accessToken = '<Mapbox access token>'
 

@@ -7,7 +7,7 @@ A component that adds a [Marker](https://docs.mapbox.com/mapbox-gl-js/api/marker
 
 ```javascript
 import React, { FC } from 'react'
-import { Map, MapProvider, Marker } from '@vinctus/react-mapbox'
+import { Map, MapProvider, Marker } from '@vinctus/react-maplibre'
 
 const accessToken = '<Mapbox access token>'
 
