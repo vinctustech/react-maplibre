@@ -13,7 +13,7 @@ There is a test program in the `test` directory. It gets the Mapbox access token
 
 To start the test program type:
 1. ```bash
-   npm i
+   npm ci
    ```
 2. ```bash
    tsc
@@ -22,7 +22,7 @@ To start the test program type:
    cd test
    ```
 4. ```bash
-   npm i
+   npm ci
    ```
 5. ```bash
    npm start

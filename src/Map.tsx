@@ -10,7 +10,7 @@ import React, {
   CSSProperties,
   useMemo,
 } from 'react'
-import maplibre, { MapLibreEvent } from 'maplibre-gl'
+import maplibre, { MapLibreEvent, StyleSpecification } from 'maplibre-gl'
 import { ErrorBoundary } from './ErrorBoundary' // eslint-disable-line import/no-webpack-loader-syntax
 
 export type ViewState = {
@@ -81,7 +81,7 @@ function addEventHandler(map: maplibre.Map, type: string, handler: (e: any) => v
     handler({
       viewState: viewStateFromMap(map),
       ...ev,
-    })
+    }),
   )
 }
 
@@ -95,7 +95,7 @@ export type MapProps = {
   latitude: number
   logoPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
   maxPitch?: number
-  mapStyle?: string
+  mapStyle?: StyleSpecification | string
   onLoad?: (e: import('maplibre-gl').MapLibreEvent) => void
   onDragEnd?: (e: ViewStateChangeEvent) => void
   onMoveEnd?: (e: ViewStateChangeEvent) => void
@@ -123,7 +123,7 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
       fallback,
       ...options
     },
-    ref
+    ref,
   ) => {
     const mapContainer = useRef<HTMLDivElement | null>(null)
     const { map, setMap, setMapLoaded } = useMap()
@@ -175,7 +175,7 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
         height: '100%',
         ...style,
       }),
-      [style]
+      [style],
     )
 
     return (
@@ -185,5 +185,5 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
         </div>
       </ErrorBoundary>
     )
-  }
+  },
 )
