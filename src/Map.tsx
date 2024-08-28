@@ -86,6 +86,7 @@ function addEventHandler(map: maplibre.Map, type: string, handler: (e: any) => v
 }
 
 export type MapProps = {
+  reuseMaps?: boolean
   accessToken?: string
   antialias?: boolean
   children?: ReactNode | ReactNode[]
@@ -108,6 +109,7 @@ export type MapProps = {
 export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
   (
     {
+      reuseMaps = true,
       children,
       style,
       id,
@@ -127,6 +129,35 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
   ) => {
     const mapContainer = useRef<HTMLDivElement | null>(null)
     const { map, setMap, setMapLoaded } = useMap()
+    const mapContainerRef = useRef<HTMLDivElement>(null)
+    const mapInstanceRef = useRef<<maplibre.Map | null>(null)
+
+    useEffect(() => {
+      if (mapInstanceRef.current && reuseMaps) {
+        // Reuse the existing map instance
+        if (
+          mapContainerRef.current &&
+          mapInstanceRef.current.getContainer() !== mapContainerRef.current
+        ) {
+          mapContainerRef.current.appendChild(mapInstanceRef.current.getContainer())
+          mapInstanceRef.current.resize()
+        }
+      } else {
+        // Create a new map instance
+        mapInstanceRef.current = new Map({
+          container: mapContainerRef.current as HTMLElement,
+          ...mapOptions,
+        })
+      }
+
+      return () => {
+        if (!reuseMaps && mapInstanceRef.current) {
+          // Remove the map instance if reuseMaps is false
+          mapInstanceRef.current.remove()
+          mapInstanceRef.current = null
+        }
+      }
+    }, [reuseMaps, mapOptions])
 
     useImperativeHandle<maplibre.Map | null, maplibre.Map | null>(ref, () => map, [map])
 
@@ -154,6 +185,7 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
         setMap(m)
       }
     }, [
+      reuseMaps,
       map,
       onDragEnd,
       onLoad,
