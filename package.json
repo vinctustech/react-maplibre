@@ -1,6 +1,6 @@
 {
   "name": "@vinctus/react-maplibre",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Minimalist MapLibre GL JS React wrapper library",
   "types": "dist/index.d.ts",
   "publishConfig": {
