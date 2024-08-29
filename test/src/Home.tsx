@@ -1,4 +1,4 @@
-import { FC, ReactNode, useRef, useState } from 'react'
+import { FC, ReactNode, useCallback, useRef, useState } from 'react'
 import {
   Map,
   Marker,
@@ -18,9 +18,8 @@ import {
   Grid,
   Elem,
   Button,
-  NavLinkItem,
 } from '@edadma/react-tailwind'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { createGeoJSONCircle } from './util'
 import maplibre from 'maplibre-gl'
 
@@ -37,6 +36,30 @@ export const Home: FC = () => {
   const [symbol, setSymbol] = useState(true)
   const [error, setError] = useState(false)
   const map = useRef<maplibre.Map>(null)
+
+  const onLoadCallback = useCallback(
+    async (ev: { target: maplibre.Map }) => {
+      const map = ev.target
+      const viewState = viewStateFromMap(ev.target)
+
+      map.scrollZoom.setWheelZoomRate(1)
+
+      if (!map.hasImage('blue-dot')) {
+        const image = await map.loadImage(`solid-blue-15-dot.png`)
+
+        map.addImage('blue-dot', image.data)
+      }
+
+      navigate(
+        `${window.location.pathname}?latitude=${viewState.latitude}&longitude=${viewState.longitude}`,
+      )
+      setInfo((info) => ({
+        view: viewState,
+        events: [...info.events, 'load'],
+      }))
+    },
+    [navigate],
+  )
 
   return (
     <ThemeProvider>
@@ -75,26 +98,7 @@ export const Home: FC = () => {
                       events: [...info.events, 'moveend'],
                     }))
                   }}
-                  onLoad={async (ev) => {
-                    const map = ev.target
-                    const viewState = viewStateFromMap(ev.target)
-
-                    map.scrollZoom.setWheelZoomRate(1)
-
-                    if (!map.hasImage('blue-dot')) {
-                      const image = await map.loadImage(`solid-blue-15-dot.png`)
-
-                      map.addImage('blue-dot', image.data)
-                    }
-
-                    navigate(
-                      `${window.location.pathname}?latitude=${viewState.latitude}&longitude=${viewState.longitude}`,
-                    )
-                    setInfo((info) => ({
-                      view: viewState,
-                      events: [...info.events, 'load'],
-                    }))
-                  }}
+                  onLoad={onLoadCallback}
                 >
                   {error && ({} as ReactNode)}
                   <GeolocateControl position="bottom-right" showUserLocation={false} />

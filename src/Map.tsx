@@ -149,34 +149,13 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
       console.log(!!mapContainer.current, !!mapRef.current, mapLoaded)
       if (reuseMaps && mapRef.current) {
         console.log('reuse')
-        const currentCenter = mapRef.current.getCenter()
-        const currentZoom = mapRef.current.getZoom()
-        const currentStyle = mapRef.current.getStyle()
-
-        let shouldUpdate = false
-
-        // Check if the current center differs from the desired center
-        if (currentCenter.lng !== longitude || currentCenter.lat !== latitude) {
-          mapRef.current.setCenter([longitude, latitude])
-          shouldUpdate = true
+        // Reattach the existing map instance to the new container
+        if (mapContainer.current && mapRef.current.getContainer() !== mapContainer.current) {
+          mapContainer.current.appendChild(mapRef.current.getContainer())
+          mapRef.current.resize() // resize map in case container dimensions have changed
         }
 
-        // Check if the current zoom differs from the desired zoom
-        if (currentZoom !== zoom) {
-          mapRef.current.setZoom(zoom)
-          shouldUpdate = true
-        }
-
-        // Check if the current style differs from the desired style
-        if (currentStyle !== mapStyle && mapStyle) {
-          mapRef.current.setStyle(mapStyle)
-          shouldUpdate = true
-        }
-
-        // Only proceed with map update if necessary
-        if (shouldUpdate) {
-          return
-        }
+        return
       }
 
       if (mapContainer.current && !mapRef.current) {
@@ -212,14 +191,14 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
       reuseMaps,
       onDragEnd,
       onLoad,
-      onMoveEnd,
+      // onMoveEnd,
       onZoomEnd,
       setMapLoaded,
       mapStyle,
       longitude,
       latitude,
       zoom,
-      options,
+      // options, // investigate using a useRef for this (other Map options)
     ])
 
     const memoizedStyle: CSSProperties = useMemo(
