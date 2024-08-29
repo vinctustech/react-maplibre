@@ -61,6 +61,19 @@ export const Home: FC = () => {
     [navigate],
   )
 
+  const onMoveEndCallback = useCallback(
+    (ev: any) => {
+      navigate(
+        `${window.location.pathname}?latitude=${ev.viewState.latitude}&longitude=${ev.viewState.longitude}`,
+      )
+      setInfo((info) => ({
+        view: ev.viewState,
+        events: [...info.events, 'moveend'],
+      }))
+    },
+    [navigate],
+  )
+
   return (
     <ThemeProvider>
       <ModeProvider>
@@ -89,15 +102,7 @@ export const Home: FC = () => {
                   longitude={-73.57529502748406}
                   latitude={45.46566080452946}
                   zoom={14}
-                  onMoveEnd={(ev) => {
-                    navigate(
-                      `${window.location.pathname}?latitude=${ev.viewState.latitude}&longitude=${ev.viewState.longitude}`,
-                    )
-                    setInfo((info) => ({
-                      view: ev.viewState,
-                      events: [...info.events, 'moveend'],
-                    }))
-                  }}
+                  onMoveEnd={onMoveEndCallback}
                   onLoad={onLoadCallback}
                 >
                   {error && ({} as ReactNode)}
