@@ -186,7 +186,6 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
       }
     }, [
       reuseMaps,
-      mapRef,
       onDragEnd,
       onLoad,
       onMoveEnd,
