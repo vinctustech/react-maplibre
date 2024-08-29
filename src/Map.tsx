@@ -43,14 +43,10 @@ const DISABLE_PITCH = 0
 
 const MapContext = React.createContext<{
   map: maplibre.Map | null
-  setMap: React.Dispatch<React.SetStateAction<maplibre.Map | null>>
   mapLoaded: boolean
   setMapLoaded: React.Dispatch<React.SetStateAction<boolean>>
 }>({
   map: null,
-  setMap: () => {
-    throw new Error('Use <MapProvider>')
-  },
   mapLoaded: false,
   setMapLoaded: () => {
     throw new Error('Use <MapProvider>')
@@ -63,14 +59,21 @@ export const viewStateFromMap = (map: maplibre.Map) => ({
   zoom: map.getZoom(),
 })
 
-export const useMap = () => useContext(MapContext)
+export const useMap = () => {
+  const context = useContext(MapContext)
+  if (!context) {
+    throw new Error('useMap must be used within a MapProvider')
+  }
+
+  return context.mapRef.current // Returns the map object directly
+}
 
 export const MapProvider: FC<{ children?: ReactNode }> = ({ children }) => {
-  const [map, setMap] = useState<maplibre.Map | null>(null)
+  const mapRef = useRef<maplibre.Map | null>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
 
   return (
-    <MapContext.Provider value={{ map, setMap, mapLoaded, setMapLoaded }}>
+    <MapContext.Provider value={{ map: mapRef.current, mapLoaded, setMapLoaded }}>
       {children}
     </MapContext.Provider>
   )
@@ -128,43 +131,23 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
     ref,
   ) => {
     const mapContainer = useRef<HTMLDivElement | null>(null)
-    const { map, setMap, setMapLoaded } = useMap()
-    const mapContainerRef = useRef<HTMLDivElement>(null)
-    const mapInstanceRef = useRef<<maplibre.Map | null>(null)
+    const { map, setMapLoaded } = useMap()
+
+    useImperativeHandle<maplibre.Map | null, maplibre.Map | null>(ref, () => map, [mapRef])
 
     useEffect(() => {
-      if (mapInstanceRef.current && reuseMaps) {
-        // Reuse the existing map instance
-        if (
-          mapContainerRef.current &&
-          mapInstanceRef.current.getContainer() !== mapContainerRef.current
-        ) {
-          mapContainerRef.current.appendChild(mapInstanceRef.current.getContainer())
-          mapInstanceRef.current.resize()
+      if (reuseMaps && map) {
+        // If we're reusing maps and a map already exists, just update the view state
+        map.setCenter([longitude, latitude])
+        map.setZoom(zoom)
+
+        if (mapStyle) {
+          map.setStyle(mapStyle)
         }
-      } else {
-        // Create a new map instance
-        mapInstanceRef.current = new Map({
-          container: mapContainerRef.current as HTMLElement,
-          ...mapOptions,
-        })
+        return
       }
 
-      return () => {
-        if (!reuseMaps && mapInstanceRef.current) {
-          // Remove the map instance if reuseMaps is false
-          mapInstanceRef.current.remove()
-          mapInstanceRef.current = null
-        }
-      }
-    }, [reuseMaps, mapOptions])
-
-    useImperativeHandle<maplibre.Map | null, maplibre.Map | null>(ref, () => map, [map])
-
-    useEffect(() => {
-      if (map) return // initialize map only once
-
-      if (mapContainer.current) {
+      if (mapContainer.current && !map) {
         const m = new maplibre.Map({
           container: mapContainer.current!,
           style: mapStyle,
@@ -182,16 +165,22 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
         if (onMoveEnd) addEventHandler(m, 'moveend', onMoveEnd)
         if (onZoomEnd) addEventHandler(m, 'zoomend', onZoomEnd)
 
-        setMap(m)
+        map = m
+      }
+
+      return () => {
+        if (!reuseMaps && map) {
+          map.remove()
+          mapRef.current = null
+        }
       }
     }, [
       reuseMaps,
-      map,
+      mapRef,
       onDragEnd,
       onLoad,
       onMoveEnd,
       onZoomEnd,
-      setMap,
       setMapLoaded,
       mapStyle,
       longitude,
