@@ -146,18 +146,21 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
     ])
 
     useEffect(() => {
-      if (reuseMaps && mapRef.current) {
-        // If we're reusing maps and a map already exists, just update the view state
-        mapRef.current.setCenter([longitude, latitude])
-        mapRef.current.setZoom(zoom)
+      console.log('Effect triggered', {
+        reuseMaps,
+        mapRef: mapRef.current,
+        longitude,
+        latitude,
+        zoom,
+        mapLoaded,
+      })
 
-        if (mapStyle) {
-          mapRef.current.setStyle(mapStyle)
-        }
+      if (reuseMaps && mapRef.current) {
         return
       }
 
       if (mapContainer.current && !mapRef.current) {
+        console.log('Creating new map')
         const m = new maplibre.Map({
           container: mapContainer.current!,
           style: mapStyle,
