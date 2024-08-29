@@ -139,7 +139,7 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
     ref,
   ) => {
     const mapContainer = useRef<HTMLDivElement | null>(null)
-    const { mapRef, setMapLoaded } = useMap()
+    const { mapRef, mapLoaded, setMapLoaded } = useMap()
 
     useImperativeHandle<maplibre.Map | null, maplibre.Map | null>(ref, () => mapRef.current, [
       mapRef,
@@ -170,7 +170,8 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
         if (onLoad)
           addEventHandler(m, 'load', (ev) => {
             onLoad(ev)
-            setMapLoaded(true)
+
+            if (!mapLoaded) setMapLoaded(true)
           })
         if (onMoveEnd) addEventHandler(m, 'moveend', onMoveEnd)
         if (onZoomEnd) addEventHandler(m, 'zoomend', onZoomEnd)
