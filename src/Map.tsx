@@ -146,9 +146,7 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
     ])
 
     useEffect(() => {
-      console.log(!!mapContainer.current, !!mapRef.current, mapLoaded)
       if (reuseMaps && mapRef.current) {
-        console.log('reuse')
         // Reattach the existing map instance to the new container
         if (mapContainer.current && mapRef.current.getContainer() !== mapContainer.current) {
           mapContainer.current.appendChild(mapRef.current.getContainer())
@@ -159,7 +157,6 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
       }
 
       if (mapContainer.current && !mapRef.current) {
-        console.log('create')
         const m = new maplibre.Map({
           container: mapContainer.current!,
           style: mapStyle,
