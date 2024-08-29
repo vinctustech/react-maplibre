@@ -42,11 +42,11 @@ const DEFAULT_STYLE = 'https://demotiles.maplibre.org/style.json'
 const DISABLE_PITCH = 0
 
 const MapContext = React.createContext<{
-  map: maplibre.Map | null
+  mapRef: React.MutableRefObject<maplibre.Map | null>
   mapLoaded: boolean
   setMapLoaded: React.Dispatch<React.SetStateAction<boolean>>
 }>({
-  map: null,
+  mapRef: { current: null }, // Provide a default value for mapRef
   mapLoaded: false,
   setMapLoaded: () => {
     throw new Error('Use <MapProvider>')
@@ -61,16 +61,18 @@ export const viewStateFromMap = (map: maplibre.Map) => ({
 
 export const useMap = () => {
   const context = useContext(MapContext)
+
   if (!context) {
     throw new Error('useMap must be used within a MapProvider')
   }
 
-  const { mapRef, mapLoaded } = context
+  const { mapRef, mapLoaded, setMapLoaded } = context
 
   return {
     map: mapRef.current, // The actual map object
-    mapLoaded, // The map loaded state
     mapRef, // The ref itself, in case it's needed
+    mapLoaded, // The map loaded state
+    setMapLoaded,
   }
 }
 
@@ -79,7 +81,7 @@ export const MapProvider: FC<{ children?: ReactNode }> = ({ children }) => {
   const [mapLoaded, setMapLoaded] = useState(false)
 
   return (
-    <MapContext.Provider value={{ map: mapRef.current, mapLoaded, setMapLoaded }}>
+    <MapContext.Provider value={{ mapRef, mapLoaded, setMapLoaded }}>
       {children}
     </MapContext.Provider>
   )
