@@ -149,7 +149,34 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
       console.log(!!mapContainer.current, !!mapRef.current, mapLoaded)
       if (reuseMaps && mapRef.current) {
         console.log('reuse')
-        return
+        const currentCenter = mapRef.current.getCenter()
+        const currentZoom = mapRef.current.getZoom()
+        const currentStyle = mapRef.current.getStyle()
+
+        let shouldUpdate = false
+
+        // Check if the current center differs from the desired center
+        if (currentCenter.lng !== longitude || currentCenter.lat !== latitude) {
+          mapRef.current.setCenter([longitude, latitude])
+          shouldUpdate = true
+        }
+
+        // Check if the current zoom differs from the desired zoom
+        if (currentZoom !== zoom) {
+          mapRef.current.setZoom(zoom)
+          shouldUpdate = true
+        }
+
+        // Check if the current style differs from the desired style
+        if (currentStyle !== mapStyle && mapStyle) {
+          mapRef.current.setStyle(mapStyle)
+          shouldUpdate = true
+        }
+
+        // Only proceed with map update if necessary
+        if (shouldUpdate) {
+          return
+        }
       }
 
       if (mapContainer.current && !mapRef.current) {
