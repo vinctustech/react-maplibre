@@ -146,21 +146,11 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
     ])
 
     useEffect(() => {
-      console.log('Effect triggered', {
-        reuseMaps,
-        mapRef: mapRef.current,
-        longitude,
-        latitude,
-        zoom,
-        mapLoaded,
-      })
-
       if (reuseMaps && mapRef.current) {
         return
       }
 
       if (mapContainer.current && !mapRef.current) {
-        console.log('Creating new map')
         const m = new maplibre.Map({
           container: mapContainer.current!,
           style: mapStyle,
