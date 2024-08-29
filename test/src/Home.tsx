@@ -19,8 +19,9 @@ import {
   Grid,
   Elem,
   Button,
+  NavLinkItem,
 } from '@edadma/react-tailwind'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { createGeoJSONCircle } from './util'
 import maplibre from 'maplibre-gl'
 
@@ -246,6 +247,9 @@ export const Home: FC = () => {
                 </Button>
               </Elem>
             </Grid>
+            <Button className="mt-3" onClick={() => navigate('/whatever')}>
+              Whatever
+            </Button>
           </Card>
         </MapProvider>
       </ModeProvider>
