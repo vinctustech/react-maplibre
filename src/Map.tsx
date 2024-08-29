@@ -178,12 +178,27 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
         mapRef.current = m
       }
 
-      return () => {
-        if (!reuseMaps && mapRef.current) {
-          mapRef.current.remove()
-          mapRef.current = null
-        }
-      }
+      // further investigation: calling .remove() causes the following error:
+      //
+      // Cannot read properties of undefined (reading 'off')
+      // TypeError: Cannot read properties of undefined (reading 'off')
+      // at t.GeolocateControl.onRemove (http://localhost:3002/static/js/bundle.js:107201:393)
+      // at t.Map.removeControl (http://localhost:3002/static/js/bundle.js:107351:57)
+      // at http://localhost:3002/static/js/bundle.js:853:53
+      //   at safelyCallDestroy (http://localhost:3002/static/js/bundle.js:39324:9)
+      // at commitHookEffectListUnmount (http://localhost:3002/static/js/bundle.js:39462:15)
+      // at commitPassiveUnmountInsideDeletedTreeOnFiber (http://localhost:3002/static/js/bundle.js:41143:15)
+      // at commitPassiveUnmountEffectsInsideOfDeletedTree_begin (http://localhost:3002/static/js/bundle.js:41099:9)
+      // at commitPassiveUnmountEffects_begin (http://localhost:3002/static/js/bundle.js:41021:15)
+      // at commitPassiveUnmountEffects (http://localhost:3002/static/js/bundle.js:41009:7)
+      // at flushPassiveEffectsImpl (http://localhost:3002/static/js/bundle.js:42830:7)
+      //
+      // return () => {
+      //   if (!reuseMaps && mapRef.current) {
+      //     mapRef.current.remove()
+      //     mapRef.current = null
+      //   }
+      // }
     }, [
       reuseMaps,
       onDragEnd,
