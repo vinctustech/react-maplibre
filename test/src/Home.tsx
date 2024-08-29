@@ -92,7 +92,6 @@ export const Home: FC = () => {
                 style={{ width: '100%', height: '400px' }}
               >
                 <Map
-                  reuseMaps
                   fallback={
                     <Text size="xl" weight="bold">
                       This is the error boundary fallback
