@@ -65,7 +65,13 @@ export const useMap = () => {
     throw new Error('useMap must be used within a MapProvider')
   }
 
-  return context.mapRef.current // Returns the map object directly
+  const { mapRef, mapLoaded } = context
+
+  return {
+    map: mapRef.current, // The actual map object
+    mapLoaded, // The map loaded state
+    mapRef, // The ref itself, in case it's needed
+  }
 }
 
 export const MapProvider: FC<{ children?: ReactNode }> = ({ children }) => {
@@ -131,23 +137,25 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
     ref,
   ) => {
     const mapContainer = useRef<HTMLDivElement | null>(null)
-    const { map, setMapLoaded } = useMap()
+    const { mapRef, setMapLoaded } = useMap()
 
-    useImperativeHandle<maplibre.Map | null, maplibre.Map | null>(ref, () => map, [mapRef])
+    useImperativeHandle<maplibre.Map | null, maplibre.Map | null>(ref, () => mapRef.current, [
+      mapRef,
+    ])
 
     useEffect(() => {
-      if (reuseMaps && map) {
+      if (reuseMaps && mapRef.current) {
         // If we're reusing maps and a map already exists, just update the view state
-        map.setCenter([longitude, latitude])
-        map.setZoom(zoom)
+        mapRef.current.setCenter([longitude, latitude])
+        mapRef.current.setZoom(zoom)
 
         if (mapStyle) {
-          map.setStyle(mapStyle)
+          mapRef.current.setStyle(mapStyle)
         }
         return
       }
 
-      if (mapContainer.current && !map) {
+      if (mapContainer.current && !mapRef.current) {
         const m = new maplibre.Map({
           container: mapContainer.current!,
           style: mapStyle,
@@ -165,12 +173,12 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
         if (onMoveEnd) addEventHandler(m, 'moveend', onMoveEnd)
         if (onZoomEnd) addEventHandler(m, 'zoomend', onZoomEnd)
 
-        map = m
+        mapRef.current = m
       }
 
       return () => {
-        if (!reuseMaps && map) {
-          map.remove()
+        if (!reuseMaps && mapRef.current) {
+          mapRef.current.remove()
           mapRef.current = null
         }
       }
