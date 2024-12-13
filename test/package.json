@@ -4,7 +4,6 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@edadma/react-tailwind": "^0.1.0-pre.38",
     "@vinctus/react-maplibre": "file:..",
     "maplibre-gl": "^4.7.1",
     "react": "file:../node_modules/react",
@@ -16,9 +15,6 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.13",
-    "postcss": "^8.4.21",
-    "tailwindcss": "^3.2.7",
     "typescript": "^5.7.2",
     "vite": "^6.0.3"
   },

@@ -38,6 +38,8 @@ export const Home: FC = () => {
   const [error, setError] = useState(false)
   const map = useRef<maplibre.Map>(null)
 
+  console.log('Rendering Home component');
+
   return (
     <ThemeProvider>
       <ModeProvider>

@@ -1,0 +1,44 @@
+; Minimalist MapLibre GL JS React wrapper library
+
+# library code
+./src
+ErrorBoundary.tsx
+GeolocateControl.tsx
+index.tsx
+Layer.tsx
+Map.tsx
+Marker.tsx
+Popup.tsx
+ScaleControl.tsx
+types.tsx
+
+# library build files
+./
+package.json
+tsconfig.json
+
+# readme
+./
+README.md
+
+# test project
+./test/src
+App.tsx
+Home.tsx
+index.css
+index.tsx
+util.ts
+vite-env.d.ts
+
+# test project index.html
+./test
+index.html
+
+# test project build files
+./test
+tsconfig.app.json
+tsconfig.json
+tsconfig.node.json
+vite.config.ts
+postcss.config.js
+tailwind.config.js
