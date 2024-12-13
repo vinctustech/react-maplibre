@@ -1,14 +1,19 @@
-import { FC } from 'react'
-import { Route, Routes } from 'react-router-dom'
-import { Home } from './Home'
+import { Map, MapProvider } from '@vinctus/react-maplibre'
+import './App.css'
 
-const App: FC = () => {
-  console.log('Rendering test App')
+export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-    </Routes>
+    <MapProvider>
+      <div className="map-container">
+        <Map
+          longitude={-73.57529502748406}
+          latitude={45.46566080452946}
+          zoom={14}
+          onLoad={(e) => {
+            console.log('Map loaded', e)
+          }}
+        />
+      </div>
+    </MapProvider>
   )
 }
-
-export default App
