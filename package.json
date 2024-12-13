@@ -14,8 +14,6 @@
     ".": "./dist/index.js",
     "./dist/*": "./dist/*.js"
   },
-  "dependencies": {
-  },
   "peerDependencies": {
     "maplibre-gl": "^4.7.1",
     "react": "^18.3.1",
