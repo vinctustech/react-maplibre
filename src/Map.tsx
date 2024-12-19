@@ -131,7 +131,6 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
     useImperativeHandle<maplibre.Map | null, maplibre.Map | null>(ref, () => map, [map])
 
     useEffect(() => {
-      console.log('Map useEffect running', { map, mapContainer: mapContainer.current });
       if (map) return // initialize map only once
 
       if (mapContainer.current) {
