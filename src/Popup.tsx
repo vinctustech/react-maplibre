@@ -9,6 +9,7 @@ export type PopupProps = {
   latitude: number
   className?: string
   closeOnClick?: boolean
+  closeButton?: boolean
 }
 
 export const Popup: FC<PopupProps> = ({ children, longitude, latitude, ...options }) => {

@@ -187,6 +187,7 @@ export default function Home() {
                 longitude={-73.57604400241011}
                 latitude={45.4622652132226}
                 closeOnClick={false}
+                closeButton={false}
               >
                 <div>This is a popup</div>
               </Popup>

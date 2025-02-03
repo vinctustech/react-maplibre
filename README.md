@@ -25,5 +25,5 @@ To start the test program type:
    npm ci
    ```
 5. ```bash
-   npm start
+   npm run dev
    ```
