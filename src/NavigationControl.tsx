@@ -15,7 +15,10 @@ export const NavigationControl: FC<NavigationControlProps> = ({
   const optionsString = JSON.stringify(options)
 
   useEffect(() => {
-    const control = new maplibre.NavigationControl()
+    const control = new maplibre.NavigationControl({
+      ...JSON.parse(optionsString),
+      showZoom: true,
+    })
 
     if (map && position) {
       map.addControl(control, position)
