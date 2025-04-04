@@ -3,12 +3,11 @@ import maplibre from 'maplibre-gl'
 import { useMap } from './Map'
 import { ControlPosition } from './types'
 
-export type GeolocateControlProps = {
+export type NavigationControlProps = {
   position?: ControlPosition
-  showUserLocation?: boolean
 }
 
-export const GeolocateControl: FC<GeolocateControlProps> = ({
+export const NavigationControl: FC<NavigationControlProps> = ({
   position = 'top-right' as ControlPosition,
   ...options
 }) => {
@@ -16,7 +15,7 @@ export const GeolocateControl: FC<GeolocateControlProps> = ({
   const optionsString = JSON.stringify(options)
 
   useEffect(() => {
-    const control = new maplibre.GeolocateControl({ ...JSON.parse(optionsString) })
+    const control = new maplibre.NavigationControl()
 
     if (map && position) {
       map.addControl(control, position)

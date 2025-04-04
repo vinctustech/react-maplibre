@@ -12,6 +12,7 @@ import {
 import maplibre from 'maplibre-gl'
 import { createGeoJSONCircle } from './util'
 import './Home.css'
+import { NavigationControl } from '../../src/NavigationControl.tsx'
 
 export default function Home() {
   const [info, setInfo] = useState<{ view: ViewState; events: string[] }>({
@@ -32,8 +33,8 @@ export default function Home() {
         <div className="info">
           {info && (
             <p>
-              Center: {info.view.longitude.toFixed(4)}, {info.view.latitude.toFixed(4)} |
-              Zoom: {info.view.zoom.toFixed(4)}
+              Center: {info.view.longitude.toFixed(4)}, {info.view.latitude.toFixed(4)} | Zoom:{' '}
+              {info.view.zoom.toFixed(4)}
             </p>
           )}
         </div>
@@ -75,6 +76,7 @@ export default function Home() {
 
             <GeolocateControl position="bottom-right" showUserLocation={false} />
             <ScaleControl position="bottom-right" />
+            <NavigationControl position="bottom-right" />
 
             {marker && (
               <Marker

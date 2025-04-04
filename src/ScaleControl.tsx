@@ -7,14 +7,14 @@ export type ScaleControlProps = {
   position?: ControlPosition
 }
 
-export const ScaleControl: FC<ScaleControlProps> = ({ position = 'top-right', ...options }) => {
+export const ScaleControl: FC<ScaleControlProps> = ({ position = 'top-right' as ControlPosition, ...options }) => {
   const { map } = useMap()
   const optionsString = JSON.stringify(options)
 
   useEffect(() => {
     const control = new maplibre.ScaleControl()
 
-    if (map) {
+    if (map && position) {
       map.addControl(control, position)
     }
 
