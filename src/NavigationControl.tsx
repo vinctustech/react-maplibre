@@ -1,24 +1,24 @@
 import { FC, useEffect } from 'react'
-import maplibre from 'maplibre-gl'
+import maplibre, { NavigationControlOptions } from 'maplibre-gl'
 import { useMap } from './Map'
 import { ControlPosition } from './types'
 
 export type NavigationControlProps = {
   position?: ControlPosition
+  options?: NavigationControlOptions
 }
 
 export const NavigationControl: FC<NavigationControlProps> = ({
-  position = 'top-right' as ControlPosition,
-  ...options
+  position = 'bottom-right' as ControlPosition,
+  options = {
+    showZoom: true,
+    showCompass: false,
+  },
 }) => {
   const { map } = useMap()
-  const optionsString = JSON.stringify(options)
 
   useEffect(() => {
-    const control = new maplibre.NavigationControl({
-      ...JSON.parse(optionsString),
-      showZoom: true,
-    })
+    const control = new maplibre.NavigationControl(options)
 
     if (map && position) {
       map.addControl(control, position)
@@ -27,7 +27,7 @@ export const NavigationControl: FC<NavigationControlProps> = ({
     return () => {
       map?.removeControl(control)
     }
-  }, [position, optionsString, map])
+  }, [position, options, map])
 
   return null
 }

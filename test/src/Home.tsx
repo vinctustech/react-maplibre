@@ -8,11 +8,11 @@ import {
   Popup,
   GeolocateControl,
   ScaleControl,
+  NavigationControl,
 } from '@vinctus/react-maplibre'
 import maplibre from 'maplibre-gl'
 import { createGeoJSONCircle } from './util'
 import './Home.css'
-import { NavigationControl } from '../../src/NavigationControl.tsx'
 
 export default function Home() {
   const [info, setInfo] = useState<{ view: ViewState; events: string[] }>({
@@ -74,9 +74,9 @@ export default function Home() {
           >
             {error && ({} as React.ReactNode)}
 
-            <GeolocateControl position="bottom-right" showUserLocation={false} />
-            <ScaleControl position="bottom-right" />
-            <NavigationControl position="bottom-right" />
+            <GeolocateControl />
+            <ScaleControl />
+            <NavigationControl />
 
             {marker && (
               <Marker

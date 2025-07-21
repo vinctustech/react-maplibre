@@ -1,22 +1,21 @@
 import { FC, useEffect } from 'react'
-import maplibre from 'maplibre-gl'
+import maplibre, { GeolocateControlOptions } from 'maplibre-gl'
 import { useMap } from './Map'
 import { ControlPosition } from './types'
 
 export type GeolocateControlProps = {
   position?: ControlPosition
-  showUserLocation?: boolean
+  options?: GeolocateControlOptions
 }
 
 export const GeolocateControl: FC<GeolocateControlProps> = ({
-  position = 'top-right' as ControlPosition,
-  ...options
+  position = 'bottom-right' as ControlPosition,
+  options = { showUserLocation: false },
 }) => {
   const { map } = useMap()
-  const optionsString = JSON.stringify(options)
 
   useEffect(() => {
-    const control = new maplibre.GeolocateControl({ ...JSON.parse(optionsString) })
+    const control = new maplibre.GeolocateControl(options)
 
     if (map && position) {
       map.addControl(control, position)
@@ -25,7 +24,7 @@ export const GeolocateControl: FC<GeolocateControlProps> = ({
     return () => {
       map?.removeControl(control)
     }
-  }, [position, optionsString, map])
+  }, [position, options, map])
 
   return null
 }
