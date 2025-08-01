@@ -83,7 +83,7 @@ export default function Home() {
                 longitude={-73.57529502748406}
                 latitude={45.46566080452946}
                 popup={<p>This is a marker popup</p>}
-                closeOnClick={false}
+                closeOnClick={true}
               >
                 <div className="marker">This is a marker</div>
               </Marker>
@@ -189,7 +189,7 @@ export default function Home() {
                 longitude={-73.57604400241011}
                 latitude={45.4622652132226}
                 closeOnClick={false}
-                closeButton={false}
+                closeButton={true}
               >
                 <div>This is a popup</div>
               </Popup>

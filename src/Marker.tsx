@@ -1,14 +1,15 @@
-import { FC, useEffect, useState, Children, ReactElement, ReactNode } from 'react'
+import { FC, useEffect, useState, Children, ReactElement, ReactNode, useRef } from 'react'
 import maplibre, { PositionAnchor } from 'maplibre-gl'
 import { useMap } from './Map'
 import ReactDOM from 'react-dom'
-import ReactDOMServer from 'react-dom/server' // eslint-disable-line import/no-webpack-loader-syntax
+import ReactDOMServer from 'react-dom/server'
 
 export type MarkerProps = {
   longitude: number
   latitude: number
   popup?: ReactElement
   closeOnClick?: boolean
+  closeButton?: boolean
   anchor?: PositionAnchor
   color?: string
   children?: ReactNode
@@ -19,41 +20,96 @@ export const Marker: FC<MarkerProps> = ({
   longitude,
   latitude,
   popup,
-  closeOnClick,
+  closeOnClick = false,
+  closeButton = true,
   ...options
 }) => {
   const { map } = useMap()
   const [result, setResult] = useState<any>(null)
+  const markerRef = useRef<maplibre.Marker | null>(null)
+  const popupRef = useRef<maplibre.Popup | null>(null)
+  const cleanupRef = useRef<(() => void) | null>(null)
   const optionsString = JSON.stringify(options)
 
   useEffect(() => {
-    let marker: maplibre.Marker | null = null
+    if (!map) return
+
     const isEmpty = Children.count(children) === 0
+    const element = document.createElement('div')
+    const parsedOptions = JSON.parse(optionsString)
 
-    if (map) {
-      const element = document.createElement('div')
-      const parsedOptions = JSON.parse(optionsString)
+    if (!isEmpty) {
+      setResult(ReactDOM.createPortal(children, element))
+    }
 
-      if (!isEmpty) setResult(ReactDOM.createPortal(children, element))
+    // Create marker
+    const marker = isEmpty
+      ? new maplibre.Marker({ ...parsedOptions })
+      : new maplibre.Marker({ ...parsedOptions, element })
 
-      marker = isEmpty
-        ? new maplibre.Marker({ ...parsedOptions })
-        : new maplibre.Marker( { ...parsedOptions, element })
+    marker.setLngLat([longitude, latitude]).addTo(map)
+    markerRef.current = marker
 
-      if (popup)
-        marker.setPopup(
-          new maplibre.Popup({ offset: [0, -15], closeOnClick }).setHTML(
-            ReactDOMServer.renderToStaticMarkup(popup)
-          )
-        )
+    // Handle popup manually if provided
+    if (popup) {
+      const popupHTML = ReactDOMServer.renderToStaticMarkup(popup)
 
-      marker = marker.setLngLat([longitude, latitude]).addTo(map)
+      const handleMarkerClick = (e: Event) => {
+        e.stopPropagation()
+
+        // Close existing popup if any
+        if (popupRef.current) {
+          popupRef.current.remove()
+          popupRef.current = null
+          return // Toggle behavior - close if already open
+        }
+
+        // Create new popup directly on the map
+        const newPopup = new maplibre.Popup({
+          offset: [0, -15],
+          closeOnClick,
+          closeButton,
+        })
+          .setLngLat([longitude, latitude])
+          .setHTML(popupHTML)
+          .addTo(map)
+
+        popupRef.current = newPopup
+
+        // Listen for popup close to clean up reference
+        newPopup.on('close', () => {
+          popupRef.current = null
+        })
+      }
+
+      // Add click listener to marker element
+      const markerElement = marker.getElement()
+      markerElement.style.cursor = 'pointer'
+      markerElement.addEventListener('click', handleMarkerClick)
+
+      // Cleanup function
+      const cleanup = () => {
+        markerElement.removeEventListener('click', handleMarkerClick)
+        if (popupRef.current) {
+          popupRef.current.remove()
+          popupRef.current = null
+        }
+      }
+
+      cleanupRef.current = cleanup
     }
 
     return () => {
-      if (marker) marker.remove()
+      if (cleanupRef.current) {
+        cleanupRef.current()
+        cleanupRef.current = null
+      }
+      if (markerRef.current) {
+        markerRef.current.remove()
+        markerRef.current = null
+      }
     }
-  }, [closeOnClick, optionsString, setResult, children, latitude, longitude, map, popup])
+  }, [map, optionsString, children, longitude, latitude, popup, closeOnClick, closeButton])
 
   return result
 }
