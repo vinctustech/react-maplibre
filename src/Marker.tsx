@@ -8,6 +8,7 @@ export type MarkerProps = {
   longitude: number
   latitude: number
   popup?: ReactElement
+  popupClassName?: string
   closeOnClick?: boolean
   closeButton?: boolean
   anchor?: PositionAnchor
@@ -20,6 +21,7 @@ export const Marker: FC<MarkerProps> = ({
   longitude,
   latitude,
   popup,
+  popupClassName,
   closeOnClick = false,
   closeButton = true,
   ...options
@@ -69,6 +71,7 @@ export const Marker: FC<MarkerProps> = ({
           offset: [0, -15],
           closeOnClick,
           closeButton,
+          className: popupClassName,
         })
           .setLngLat([longitude, latitude])
           .setHTML(popupHTML)
