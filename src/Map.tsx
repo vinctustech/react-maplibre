@@ -126,12 +126,13 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
     ref,
   ) => {
     const mapContainer = useRef<HTMLDivElement | null>(null)
+    const initializationRef = useRef<boolean>(false)
     const { map, setMap, setMapLoaded } = useMap()
 
     useImperativeHandle<maplibre.Map | null, maplibre.Map | null>(ref, () => map, [map])
 
     useEffect(() => {
-      if (map) return // initialize map only once
+      if (initializationRef.current) return // initialize map only once
 
       let createdMap: maplibre.Map | null = null
 
@@ -145,6 +146,7 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
         })
 
         createdMap = m
+        initializationRef.current = true
 
         if (onDragEnd) addEventHandler(m, 'dragend', onDragEnd)
         if (onLoad)
@@ -163,10 +165,10 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
           createdMap.remove() // This destroys the map and cleans up all layers/sources
           setMap(null)
           setMapLoaded(false)
+          initializationRef.current = false
         }
       }
     }, [
-      map,
       onDragEnd,
       onLoad,
       onMoveEnd,
