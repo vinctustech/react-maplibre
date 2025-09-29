@@ -133,6 +133,8 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
     useEffect(() => {
       if (map) return // initialize map only once
 
+      let createdMap: maplibre.Map | null = null
+
       if (mapContainer.current) {
         const m = new maplibre.Map({
           container: mapContainer.current!,
@@ -141,6 +143,8 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
           zoom,
           ...options,
         })
+
+        createdMap = m
 
         if (onDragEnd) addEventHandler(m, 'dragend', onDragEnd)
         if (onLoad)
@@ -152,6 +156,14 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
         if (onZoomEnd) addEventHandler(m, 'zoomend', onZoomEnd)
 
         setMap(m)
+      }
+
+      return () => {
+        if (createdMap) {
+          createdMap.remove() // This destroys the map and cleans up all layers/sources
+          setMap(null)
+          setMapLoaded(false)
+        }
       }
     }, [
       map,
