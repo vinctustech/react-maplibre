@@ -22,7 +22,11 @@ export const GeolocateControl: FC<GeolocateControlProps> = ({
     }
 
     return () => {
-      map?.removeControl(control)
+      try {
+        map?.removeControl(control)
+      } catch {
+        // Map might be destroyed already, ignore cleanup errors
+      }
     }
   }, [position, options, map])
 
