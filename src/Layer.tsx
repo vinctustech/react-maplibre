@@ -24,9 +24,20 @@ export const Layer: FC<LayerProps> = ({ layer, source }) => {
     }
 
     return () => {
-      if (added) {
-        map?.removeLayer(parsedLayer.id) // when removing, the layer must be removed first, and then the source
-        map?.removeSource(parsedLayer.id)
+      if (added && map && !(map as any)._removed) {
+        try {
+          // Check if layer exists before removing
+          if (map.getLayer(parsedLayer.id)) {
+            map.removeLayer(parsedLayer.id) // when removing, the layer must be removed first, and then the source
+          }
+          // Check if source exists before removing
+          if (map.getSource(parsedLayer.id)) {
+            map.removeSource(parsedLayer.id)
+          }
+        } catch (error) {
+          // Silently handle cleanup errors during navigation
+          console.warn('Layer cleanup error:', error)
+        }
       }
     }
   }, [layerString, sourceString, map, mapLoaded])
