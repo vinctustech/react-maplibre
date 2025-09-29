@@ -171,8 +171,6 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
       onLoad,
       onMoveEnd,
       onZoomEnd,
-      setMap,
-      setMapLoaded,
       mapStyle,
       longitude,
       latitude,
