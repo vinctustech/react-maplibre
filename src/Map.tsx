@@ -126,15 +126,13 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
     ref,
   ) => {
     const mapContainer = useRef<HTMLDivElement | null>(null)
-    const initializationRef = useRef<boolean>(false)
+    const mapInstanceRef = useRef<maplibre.Map | null>(null)
     const { map, setMap, setMapLoaded } = useMap()
 
     useImperativeHandle<maplibre.Map | null, maplibre.Map | null>(ref, () => map, [map])
 
     useEffect(() => {
-      if (initializationRef.current) return // initialize map only once
-
-      let createdMap: maplibre.Map | null = null
+      if (map) return // initialize map only once
 
       if (mapContainer.current) {
         const m = new maplibre.Map({
@@ -145,8 +143,7 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
           ...options,
         })
 
-        createdMap = m
-        initializationRef.current = true
+        mapInstanceRef.current = m
 
         if (onDragEnd) addEventHandler(m, 'dragend', onDragEnd)
         if (onLoad)
@@ -158,27 +155,14 @@ export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
         if (onZoomEnd) addEventHandler(m, 'zoomend', onZoomEnd)
 
         setMap(m)
-      }
 
-      return () => {
-        if (createdMap) {
-          createdMap.remove() // This destroys the map and cleans up all layers/sources
-          setMap(null)
-          setMapLoaded(false)
-          initializationRef.current = false
+        // Cleanup when component unmounts
+        return () => {
+          m.remove() // This destroys the map and cleans up all layers/sources
+          mapInstanceRef.current = null
         }
       }
-    }, [
-      onDragEnd,
-      onLoad,
-      onMoveEnd,
-      onZoomEnd,
-      mapStyle,
-      longitude,
-      latitude,
-      zoom,
-      options,
-    ])
+    }, []) // Empty deps - only run once on mount
 
     const memoizedStyle: CSSProperties = useMemo(
       () => ({
