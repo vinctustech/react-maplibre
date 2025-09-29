@@ -24,7 +24,7 @@ export const Layer: FC<LayerProps> = ({ layer, source }) => {
     }
 
     return () => {
-      if (added && map && !(map as any)._removed) {
+      if (added && map) {
         try {
           // Check if layer exists before removing
           if (map.getLayer(parsedLayer.id)) {
