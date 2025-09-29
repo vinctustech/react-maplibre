@@ -26,14 +26,19 @@ export const Layer: FC<LayerProps> = ({ layer, source }) => {
     return () => {
       if (added && map) {
         try {
-          // Try to remove layer and source, ignoring errors if map is destroyed
-          map.removeLayer(parsedLayer.id)
+          // Check if layer exists before removing
+          if (map.getLayer && map.getLayer(parsedLayer.id)) {
+            map.removeLayer(parsedLayer.id) // when removing, the layer must be removed first, and then the source
+          }
         } catch {
           // Layer might not exist or map might be destroyed
         }
 
         try {
-          map.removeSource(parsedLayer.id)
+          // Check if source exists before removing
+          if (map.getSource && map.getSource(parsedLayer.id)) {
+            map.removeSource(parsedLayer.id)
+          }
         } catch {
           // Source might not exist or map might be destroyed
         }

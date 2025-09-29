@@ -25,10 +25,8 @@ export const NavigationControl: FC<NavigationControlProps> = ({
     }
 
     return () => {
-      try {
-        map?.removeControl(control)
-      } catch {
-        // Map might be destroyed already, ignore cleanup errors
+      if (map && map.hasControl && map.hasControl(control)) {
+        map.removeControl(control)
       }
     }
   }, [position, options, map])
