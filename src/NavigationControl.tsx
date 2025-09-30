@@ -25,7 +25,7 @@ export const NavigationControl: FC<NavigationControlProps> = ({
     }
 
     return () => {
-      if (map && map.hasControl && map.hasControl(control)) {
+      if (map && map.hasControl(control)) {
         map.removeControl(control)
       }
     }

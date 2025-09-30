@@ -13,34 +13,24 @@ export const Layer: FC<LayerProps> = ({ layer, source }) => {
   const sourceString = JSON.stringify(source)
 
   useEffect(() => {
-    let added = false
     const parsedSource = JSON.parse(sourceString)
     const parsedLayer = JSON.parse(layerString)
 
     if (map && mapLoaded) {
-      added = true
       map.addSource(parsedLayer.id, parsedSource) // when adding, the source must be added first, and then the layer
       map.addLayer(parsedLayer)
     }
 
     return () => {
-      if (added && map) {
-        try {
-          // Check if layer exists before removing
-          if (map.getLayer && map.getLayer(parsedLayer.id)) {
-            map.removeLayer(parsedLayer.id) // when removing, the layer must be removed first, and then the source
-          }
-        } catch {
-          // Layer might not exist or map might be destroyed
+      if (map) {
+        // Check if layer exists before removing
+        if (map.getLayer(parsedLayer.id)) {
+          map.removeLayer(parsedLayer.id) // when removing, the layer must be removed first, and then the source
         }
 
-        try {
-          // Check if source exists before removing
-          if (map.getSource && map.getSource(parsedLayer.id)) {
-            map.removeSource(parsedLayer.id)
-          }
-        } catch {
-          // Source might not exist or map might be destroyed
+        // Check if source exists before removing
+        if (map.getSource(parsedLayer.id)) {
+          map.removeSource(parsedLayer.id)
         }
       }
     }

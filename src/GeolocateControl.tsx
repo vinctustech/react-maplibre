@@ -22,7 +22,7 @@ export const GeolocateControl: FC<GeolocateControlProps> = ({
     }
 
     return () => {
-      if (map && map.hasControl && map.hasControl(control)) {
+      if (map && map.hasControl(control)) {
         map.removeControl(control)
       }
     }

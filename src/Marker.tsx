@@ -1,4 +1,4 @@
-import { FC, useEffect, useState, Children, ReactElement, ReactNode, useRef } from 'react'
+import { FC, useEffect, useState, ReactElement, ReactNode, useRef } from 'react'
 import maplibre, { PositionAnchor } from 'maplibre-gl'
 import { useMap } from './Map'
 import ReactDOM from 'react-dom'
@@ -36,18 +36,17 @@ export const Marker: FC<MarkerProps> = ({
   useEffect(() => {
     if (!map) return
 
-    const isEmpty = Children.count(children) === 0
     const element = document.createElement('div')
     const parsedOptions = JSON.parse(optionsString)
 
-    if (!isEmpty) {
+    if (children) {
       setResult(ReactDOM.createPortal(children, element))
     }
 
     // Create marker
-    const marker = isEmpty
-      ? new maplibre.Marker({ ...parsedOptions })
-      : new maplibre.Marker({ ...parsedOptions, element })
+    const marker = children
+      ? new maplibre.Marker({ ...parsedOptions, element })
+      : new maplibre.Marker({ ...parsedOptions })
 
     marker.setLngLat([longitude, latitude]).addTo(map)
     markerRef.current = marker

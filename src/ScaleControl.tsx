@@ -22,7 +22,7 @@ export const ScaleControl: FC<ScaleControlProps> = ({
     }
 
     return () => {
-      if (map && map.hasControl && map.hasControl(control)) {
+      if (map && map.hasControl(control)) {
         map.removeControl(control)
       }
     }
