@@ -1,6 +1,6 @@
-import { FC, useEffect } from 'react'
-import { LayerSpecification, GeoJSONSourceSpecification } from 'maplibre-gl'
-import { useMap } from './Map'
+import { FC, useContext, useEffect } from 'react'
+import { MapContext } from './Map'
+import { GeoJSONSourceSpecification, LayerSpecification } from 'maplibre-gl'
 
 export type LayerProps = {
   layer: Omit<LayerSpecification, 'source'>
@@ -8,7 +8,7 @@ export type LayerProps = {
 }
 
 export const Layer: FC<LayerProps> = ({ layer, source }) => {
-  const { map, mapLoaded } = useMap()
+  const { map, mapLoaded } = useContext(MapContext)
   const layerString = JSON.stringify({ source: layer.id, ...layer })
   const sourceString = JSON.stringify(source)
 
@@ -22,16 +22,18 @@ export const Layer: FC<LayerProps> = ({ layer, source }) => {
     }
 
     return () => {
-      if (map) {
-        // Check if layer exists before removing
-        if (map.getLayer(parsedLayer.id)) {
-          map.removeLayer(parsedLayer.id) // when removing, the layer must be removed first, and then the source
-        }
+      try {
+        if (map && mapLoaded && !map._removed) {
+          if (map.getLayer(parsedLayer.id)) {
+            map.removeLayer(parsedLayer.id) // when removing, the layer must be removed first, and then the source
+          }
 
-        // Check if source exists before removing
-        if (map.getSource(parsedLayer.id)) {
-          map.removeSource(parsedLayer.id)
+          if (map.getSource(parsedLayer.id)) {
+            map.removeSource(parsedLayer.id)
+          }
         }
+      } catch {
+        console.warn('Error cleaning up Layer')
       }
     }
   }, [layerString, sourceString, map, mapLoaded])

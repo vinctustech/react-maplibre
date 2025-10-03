@@ -1,7 +1,8 @@
-import { FC, useEffect, ReactElement } from 'react'
+import { FC, useEffect, ReactElement, useContext } from 'react'
 import maplibre from 'maplibre-gl'
-import { useMap } from './Map'
-import ReactDOMServer from 'react-dom/server' // eslint-disable-line import/no-webpack-loader-syntax
+import ReactDOMServer from 'react-dom/server'
+
+import { MapContext } from './Map'
 
 export type PopupProps = {
   children: ReactElement
@@ -12,24 +13,36 @@ export type PopupProps = {
   closeButton?: boolean
 }
 
-export const Popup: FC<PopupProps> = ({ children, longitude, latitude, ...options }) => {
-  const { map } = useMap()
-  const optionsString = JSON.stringify(options)
+export const Popup: FC<PopupProps> = ({
+  children,
+  longitude,
+  latitude,
+  className,
+  closeOnClick,
+  closeButton,
+}) => {
+  const { map, mapLoaded } = useContext(MapContext)
 
   useEffect(() => {
     let popup: maplibre.Popup | null = null
 
-    if (map) {
-      popup = new maplibre.Popup({ offset: [0, -15], ...JSON.parse(optionsString) })
+    if (map && mapLoaded) {
+      popup = new maplibre.Popup({ offset: [0, -15], className, closeOnClick, closeButton })
         .setLngLat([longitude, latitude])
         .setHTML(ReactDOMServer.renderToStaticMarkup(children))
         .addTo(map)
     }
 
     return () => {
-      if (popup) popup.remove()
+      try {
+        if (popup) {
+          popup.remove()
+        }
+      } catch {
+        console.warn('Error cleaning up Popup')
+      }
     }
-  }, [children, latitude, longitude, map, optionsString])
+  }, [children, latitude, longitude, map, className, closeOnClick, closeButton, mapLoaded])
 
   return null
 }

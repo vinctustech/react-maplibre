@@ -1,7 +1,7 @@
-import { FC, useEffect } from 'react'
-import maplibre, { NavigationControlOptions } from 'maplibre-gl'
-import { useMap } from './Map'
-import { ControlPosition } from './types'
+import { FC, useContext, useEffect } from 'react'
+import maplibre, { NavigationControlOptions, ControlPosition } from 'maplibre-gl'
+
+import { MapContext } from './Map'
 
 export type NavigationControlProps = {
   position?: ControlPosition
@@ -9,27 +9,32 @@ export type NavigationControlProps = {
 }
 
 export const NavigationControl: FC<NavigationControlProps> = ({
-  position = 'bottom-right' as ControlPosition,
+  position = 'bottom-right',
   options = {
     showZoom: true,
     showCompass: false,
   },
 }) => {
-  const { map } = useMap()
+  const { map, mapLoaded } = useContext(MapContext)
+  const optionsString = JSON.stringify(options || {})
 
   useEffect(() => {
-    const control = new maplibre.NavigationControl(options)
+    const control = new maplibre.NavigationControl(JSON.parse(optionsString))
 
-    if (map && position) {
+    if (map && mapLoaded && position) {
       map.addControl(control, position)
     }
 
     return () => {
-      if (map && map.hasControl(control)) {
-        map.removeControl(control)
+      try {
+        if (map && !map._removed && map.hasControl(control)) {
+          map.removeControl(control)
+        }
+      } catch {
+        console.warn('Error cleaning up NavigationControl')
       }
     }
-  }, [position, options, map])
+  }, [position, optionsString, map, mapLoaded])
 
   return null
 }

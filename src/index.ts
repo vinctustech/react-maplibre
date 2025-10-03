@@ -1,5 +1,5 @@
-export { Map, useMap, MapProvider, viewStateFromMap } from './Map'
-export type { ViewState } from './Map'
+export { Map, MapContext } from './Map'
+export type { MapDragEndEvent } from './Map'
 export { Marker } from './Marker'
 export { Popup } from './Popup'
 export { Layer } from './Layer'

@@ -1,7 +1,6 @@
-import { FC, useEffect } from 'react'
-import maplibre, { GeolocateControlOptions } from 'maplibre-gl'
-import { useMap } from './Map'
-import { ControlPosition } from './types'
+import { FC, useContext, useEffect } from 'react'
+import maplibre, { GeolocateControlOptions, ControlPosition } from 'maplibre-gl'
+import { MapContext } from './Map'
 
 export type GeolocateControlProps = {
   position?: ControlPosition
@@ -9,24 +8,29 @@ export type GeolocateControlProps = {
 }
 
 export const GeolocateControl: FC<GeolocateControlProps> = ({
-  position = 'bottom-right' as ControlPosition,
+  position = 'bottom-right',
   options = { showUserLocation: false },
 }) => {
-  const { map } = useMap()
+  const { map, mapLoaded } = useContext(MapContext)
+  const optionsString = JSON.stringify(options || {})
 
   useEffect(() => {
-    const control = new maplibre.GeolocateControl(options)
+    const control = new maplibre.GeolocateControl(JSON.parse(optionsString))
 
-    if (map && position) {
+    if (map && mapLoaded && position) {
       map.addControl(control, position)
     }
 
     return () => {
-      if (map && map.hasControl(control)) {
-        map.removeControl(control)
+      try {
+        if (map && !map._removed && map.hasControl(control)) {
+          map.removeControl(control)
+        }
+      } catch {
+        console.warn('Error cleaning up GeolocateControl')
       }
     }
-  }, [position, options, map])
+  }, [position, optionsString, map, mapLoaded])
 
   return null
 }

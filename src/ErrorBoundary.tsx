@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react'
+import { Component, ErrorInfo, ReactNode } from 'react'
 
 interface Props {
   children?: ReactNode
@@ -25,7 +25,9 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public render() {
-    if (this.state.hasError) return this.props.fallback || <h1>Sorry.. there was a map error</h1>
+    if (this.state.hasError) {
+      return this.props.fallback || <h1>Sorry.. there was a map error</h1>
+    }
 
     return this.props.children
   }

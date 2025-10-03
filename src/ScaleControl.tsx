@@ -1,32 +1,34 @@
-import { FC, useEffect } from 'react'
-import maplibre, { ScaleControlOptions } from 'maplibre-gl'
-import { useMap } from './Map'
-import { ControlPosition } from './types'
+import { FC, useContext, useEffect } from 'react'
+import maplibre, { ScaleControlOptions, ControlPosition } from 'maplibre-gl'
+
+import { MapContext } from './Map'
 
 export type ScaleControlProps = {
   position?: ControlPosition
   options?: ScaleControlOptions
 }
 
-export const ScaleControl: FC<ScaleControlProps> = ({
-  position = 'bottom-right' as ControlPosition,
-  options,
-}) => {
-  const { map } = useMap()
+export const ScaleControl: FC<ScaleControlProps> = ({ position = 'bottom-right', options }) => {
+  const { map, mapLoaded } = useContext(MapContext)
+  const optionsString = JSON.stringify(options || {})
 
   useEffect(() => {
-    const control = new maplibre.ScaleControl(options)
+    const control = new maplibre.ScaleControl(JSON.parse(optionsString))
 
-    if (map && position) {
+    if (map && mapLoaded && position) {
       map.addControl(control, position)
     }
 
     return () => {
-      if (map && map.hasControl(control)) {
-        map.removeControl(control)
+      try {
+        if (map && !map._removed && map.hasControl(control)) {
+          map.removeControl(control)
+        }
+      } catch {
+        console.warn('Error cleaning up ScaleControl')
       }
     }
-  }, [position, options, map])
+  }, [position, optionsString, map, mapLoaded])
 
   return null
 }

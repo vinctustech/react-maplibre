@@ -1,117 +1,106 @@
-import { FC, useEffect, useState, ReactElement, ReactNode, useRef } from 'react'
+import { FC, useEffect, useState, ReactNode, useContext, ReactElement } from 'react'
 import maplibre, { PositionAnchor } from 'maplibre-gl'
-import { useMap } from './Map'
 import ReactDOM from 'react-dom'
 import ReactDOMServer from 'react-dom/server'
+
+import { MapContext } from './Map'
 
 export type MarkerProps = {
   longitude: number
   latitude: number
+  className?: string
+  anchor?: PositionAnchor
+  color?: string
+  children?: ReactNode
   popup?: ReactElement
   popupClassName?: string
   closeOnClick?: boolean
   closeButton?: boolean
-  anchor?: PositionAnchor
-  color?: string
-  children?: ReactNode
 }
 
 export const Marker: FC<MarkerProps> = ({
   children,
   longitude,
   latitude,
+  className,
+  anchor,
+  color,
   popup,
   popupClassName,
   closeOnClick = false,
-  closeButton = true,
-  ...options
+  closeButton = false,
 }) => {
-  const { map } = useMap()
+  const { map, mapLoaded } = useContext(MapContext)
   const [result, setResult] = useState<any>(null)
-  const markerRef = useRef<maplibre.Marker | null>(null)
-  const popupRef = useRef<maplibre.Popup | null>(null)
-  const cleanupRef = useRef<(() => void) | null>(null)
-  const optionsString = JSON.stringify(options)
 
   useEffect(() => {
-    if (!map) return
+    let marker: maplibre.Marker
+    let newPopup: maplibre.Popup
+    let handleMarkerClick: (e: Event) => void
 
-    const element = document.createElement('div')
-    const parsedOptions = JSON.parse(optionsString)
+    if (map && mapLoaded) {
+      // We create the DOM element that we will attach to the marker, and then
+      // render the `children` props into the DOM element.
+      const element = document.createElement('div')
 
-    if (children) {
       setResult(ReactDOM.createPortal(children, element))
-    }
 
-    // Create marker
-    const marker = children
-      ? new maplibre.Marker({ ...parsedOptions, element })
-      : new maplibre.Marker({ ...parsedOptions })
+      marker = new maplibre.Marker({ anchor, className, color, element })
+        .setLngLat([longitude, latitude])
+        .addTo(map)
 
-    marker.setLngLat([longitude, latitude]).addTo(map)
-    markerRef.current = marker
+      if (popup) {
+        const popupHTML = ReactDOMServer.renderToStaticMarkup(popup)
 
-    // Handle popup manually if provided
-    if (popup) {
-      const popupHTML = ReactDOMServer.renderToStaticMarkup(popup)
+        handleMarkerClick = (e: Event) => {
+          e.stopPropagation()
 
-      const handleMarkerClick = (e: Event) => {
-        e.stopPropagation()
-
-        // Close existing popup if any
-        if (popupRef.current) {
-          popupRef.current.remove()
-          popupRef.current = null
-          return // Toggle behavior - close if already open
+          newPopup = new maplibre.Popup({
+            offset: [0, -15],
+            closeButton,
+            closeOnClick,
+            className: popupClassName,
+          })
+            .setLngLat([longitude, latitude])
+            .setHTML(popupHTML)
+            .addTo(map)
         }
 
-        // Create new popup directly on the map
-        const newPopup = new maplibre.Popup({
-          offset: [0, -15],
-          closeOnClick,
-          closeButton,
-          className: popupClassName,
-        })
-          .setLngLat([longitude, latitude])
-          .setHTML(popupHTML)
-          .addTo(map)
-
-        popupRef.current = newPopup
-
-        // Listen for popup close to clean up reference
-        newPopup.on('close', () => {
-          popupRef.current = null
-        })
+        marker.getElement().addEventListener('click', handleMarkerClick)
       }
-
-      // Add click listener to marker element
-      const markerElement = marker.getElement()
-      markerElement.style.cursor = 'pointer'
-      markerElement.addEventListener('click', handleMarkerClick)
-
-      // Cleanup function
-      const cleanup = () => {
-        markerElement.removeEventListener('click', handleMarkerClick)
-        if (popupRef.current) {
-          popupRef.current.remove()
-          popupRef.current = null
-        }
-      }
-
-      cleanupRef.current = cleanup
     }
 
     return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current()
-        cleanupRef.current = null
-      }
-      if (markerRef.current) {
-        markerRef.current.remove()
-        markerRef.current = null
+      try {
+        if (marker) {
+          marker.remove()
+        }
+
+        if (newPopup) {
+          newPopup.remove()
+        }
+
+        if (marker && handleMarkerClick) {
+          marker.getElement().removeEventListener('click', handleMarkerClick)
+        }
+      } catch {
+        console.warn('Error cleaning up Marker')
       }
     }
-  }, [map, optionsString, children, longitude, latitude, popup, closeOnClick, closeButton])
+  }, [
+    anchor,
+    className,
+    children,
+    color,
+    latitude,
+    longitude,
+    map,
+    popup,
+    popupClassName,
+    closeOnClick,
+    closeButton,
+    mapLoaded,
+  ])
 
   return result
 }

@@ -1,185 +1,126 @@
-import React, {
-  FC,
-  useRef,
-  useEffect,
-  useState,
-  useContext,
-  useImperativeHandle,
-  RefAttributes,
+import maplibre, { MapLibreEvent } from 'maplibre-gl'
+import {
+  createContext,
+  forwardRef,
   ReactNode,
-  CSSProperties,
-  useMemo,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
 } from 'react'
-import maplibre, { MapLibreEvent, StyleSpecification } from 'maplibre-gl'
-import { ErrorBoundary } from './ErrorBoundary' // eslint-disable-line import/no-webpack-loader-syntax
 
-export type ViewState = {
-  longitude: number
-  latitude: number
-  zoom: number
-}
+import { ErrorBoundary } from './ErrorBoundary'
 
-export type ViewStateChangeEvent =
-  | (MapLibreEvent<MouseEvent | TouchEvent | WheelEvent | undefined> & {
-      type: 'movestart' | 'move' | 'moveend' | 'zoomstart' | 'zoom' | 'zoomend'
-      viewState: ViewState
-    })
-  | (MapLibreEvent<MouseEvent | TouchEvent | undefined> & {
-      type:
-        | 'rotatestart'
-        | 'rotate'
-        | 'rotateend'
-        | 'dragstart'
-        | 'drag'
-        | 'dragend'
-        | 'pitchstart'
-        | 'pitch'
-        | 'pitchend'
-      viewState: ViewState
-    })
-
-const DEFAULT_STYLE = 'https://demotiles.maplibre.org/style.json'
-const DISABLE_PITCH = 0
-
-const MapContext = React.createContext<{
+export const MapContext = createContext<{
   map: maplibre.Map | null
-  setMap: React.Dispatch<React.SetStateAction<maplibre.Map | null>>
   mapLoaded: boolean
-  setMapLoaded: React.Dispatch<React.SetStateAction<boolean>>
 }>({
   map: null,
-  setMap: () => {
-    throw new Error('Use <MapProvider>')
-  },
   mapLoaded: false,
-  setMapLoaded: () => {
-    throw new Error('Use <MapProvider>')
-  },
 })
 
-export const viewStateFromMap = (map: maplibre.Map) => ({
-  longitude: map.getCenter().lng,
-  latitude: map.getCenter().lat,
-  zoom: map.getZoom(),
-})
-
-export const useMap = () => useContext(MapContext)
-
-export const MapProvider: FC<{ children?: ReactNode }> = ({ children }) => {
-  const [map, setMap] = useState<maplibre.Map | null>(null)
-  const [mapLoaded, setMapLoaded] = useState(false)
-
-  return (
-    <MapContext.Provider value={{ map, setMap, mapLoaded, setMapLoaded }}>
-      {children}
-    </MapContext.Provider>
-  )
+export type MapDragEndEvent = MapLibreEvent & {
+  viewState: {
+    longitude: number
+    latitude: number
+    zoom: number
+  }
 }
 
-function addEventHandler(map: maplibre.Map, type: string, handler: (e: any) => void) {
-  map.on(type, (ev: any) =>
-    handler({
-      viewState: viewStateFromMap(map),
-      ...ev,
-    }),
-  )
-}
-
-export type MapProps = {
-  accessToken?: string
-  antialias?: boolean
-  children?: ReactNode | ReactNode[]
-  fallback?: ReactNode
-  id?: string
+type MapProps = {
   longitude: number
   latitude: number
-  logoPosition?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
-  maxPitch?: number
-  mapStyle?: StyleSpecification | string
-  onLoad?: (e: import('maplibre-gl').MapLibreEvent) => void
-  onDragEnd?: (e: ViewStateChangeEvent) => void
-  onMoveEnd?: (e: ViewStateChangeEvent) => void
-  onZoomEnd?: (e: ViewStateChangeEvent) => void
-  ref?: RefAttributes<maplibre.Map | null>
-  style?: CSSProperties
-  zoom: number
+  mapStyle: string
+  fallback?: ReactNode
+  children?: ReactNode | ReactNode[]
+  onLoad?: (e: MapLibreEvent) => void
+  onZoomEnd?: (e: MapLibreEvent) => void
+  onDragEnd?: (e: MapDragEndEvent) => void
 }
 
-export const Map = React.forwardRef<maplibre.Map | null, MapProps>(
-  (
-    {
-      children,
-      style,
-      id,
-      longitude,
-      latitude,
-      maxPitch = DISABLE_PITCH,
-      mapStyle = DEFAULT_STYLE,
-      zoom,
-      onDragEnd,
-      onLoad,
-      onMoveEnd,
-      onZoomEnd,
-      fallback,
-      ...options
-    },
-    ref,
-  ) => {
+export const Map = forwardRef<maplibre.Map | null, MapProps>(
+  ({ longitude, latitude, mapStyle, fallback, children, onLoad, onZoomEnd, onDragEnd }, ref) => {
     const mapContainer = useRef<HTMLDivElement | null>(null)
-    const mapInstanceRef = useRef<maplibre.Map | null>(null)
-    const { map, setMap, setMapLoaded } = useMap()
+    const [mapInstance, setMapInstance] = useState<maplibre.Map | null>(null)
+    const [mapLoaded, setMapLoaded] = useState<boolean>(false)
 
-    useImperativeHandle<maplibre.Map | null, maplibre.Map | null>(ref, () => map, [map])
+    useImperativeHandle<maplibre.Map | null, maplibre.Map | null>(ref, () => mapInstance, [
+      mapInstance,
+    ])
 
     useEffect(() => {
-      if (map) return // initialize map only once
+      let newMap: maplibre.Map
 
       if (mapContainer.current) {
-        const m = new maplibre.Map({
-          container: mapContainer.current!,
+        newMap = new maplibre.Map({
+          container: mapContainer.current,
           style: mapStyle,
-          center: [longitude, latitude],
-          zoom,
-          ...options,
+          zoom: 15,
+          maxPitch: 0,
         })
 
-        mapInstanceRef.current = m
+        setMapInstance(newMap)
 
-        if (onDragEnd) addEventHandler(m, 'dragend', onDragEnd)
-        if (onLoad)
-          addEventHandler(m, 'load', (ev) => {
+        if (onLoad) {
+          newMap.on('load', (ev) => {
             onLoad(ev)
-            setMapLoaded(true)
+
+            setTimeout(() => {
+              setMapLoaded(true)
+            }, 500)
           })
-        if (onMoveEnd) addEventHandler(m, 'moveend', onMoveEnd)
-        if (onZoomEnd) addEventHandler(m, 'zoomend', onZoomEnd)
+        }
 
-        setMap(m)
+        if (onZoomEnd) {
+          newMap.on('zoomend', onZoomEnd)
+        }
 
-        // Cleanup when component unmounts
-        return () => {
-          m.remove() // This destroys the map and cleans up all layers/sources
-          mapInstanceRef.current = null
+        if (onDragEnd) {
+          newMap.on('dragend', (ev) => {
+            const newEvent: MapDragEndEvent = {
+              ...ev,
+              viewState: {
+                longitude: newMap.getCenter().lng,
+                latitude: newMap.getCenter().lat,
+                zoom: newMap.getZoom(),
+              },
+            }
+
+            onDragEnd(newEvent)
+          })
         }
       }
-    }, []) // Empty deps - only run once on mount
 
-    const memoizedStyle: CSSProperties = useMemo(
-      () => ({
-        position: 'relative',
-        width: '100%',
-        height: '100%',
-        ...style,
-      }),
-      [style],
-    )
+      return () => {
+        try {
+          if (newMap) {
+            newMap.remove()
+          }
+
+          setMapInstance(null)
+          setMapLoaded(false)
+        } catch {
+          console.warn('Error cleaning up Map')
+        }
+      }
+    }, [mapStyle, onLoad, onZoomEnd, onDragEnd])
+
+    useEffect(() => {
+      if (mapInstance) {
+        mapInstance.setCenter([longitude, latitude])
+      }
+    }, [mapInstance, latitude, longitude])
 
     return (
       <ErrorBoundary fallback={fallback}>
-        <div id={id} ref={mapContainer} style={memoizedStyle}>
-          {children}
-        </div>
+        <MapContext.Provider value={{ map: mapInstance, mapLoaded }}>
+          <div ref={mapContainer} style={{ width: '100%', height: '100%' }}>
+            {children}
+          </div>
+        </MapContext.Provider>
       </ErrorBoundary>
     )
   },
 )
+
+Map.displayName = 'Map'
