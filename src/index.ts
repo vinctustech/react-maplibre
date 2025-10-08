@@ -1,3 +1,5 @@
+import 'maplibre-gl/dist/maplibre-gl.css'
+
 export { Map, MapContext } from './Map'
 export type { MapDragEndEvent } from './Map'
 export { Marker } from './Marker'
