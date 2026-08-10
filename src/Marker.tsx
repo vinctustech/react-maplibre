@@ -1,6 +1,15 @@
-import { FC, useEffect, useState, ReactNode, useContext, ReactElement } from 'react'
+import {
+  FC,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  ReactNode,
+  useContext,
+  ReactElement,
+} from 'react'
 import maplibre, { PositionAnchor } from 'maplibre-gl'
-import ReactDOM from 'react-dom'
+import { createPortal } from 'react-dom'
 import ReactDOMServer from 'react-dom/server'
 
 import { MapContext } from './Map'
@@ -31,76 +40,71 @@ export const Marker: FC<MarkerProps> = ({
   closeButton = false,
 }) => {
   const { map, mapLoaded } = useContext(MapContext)
-  const [result, setResult] = useState<any>(null)
+  const [marker, setMarker] = useState<maplibre.Marker | null>(null)
+
+  // The DOM element the `children` are rendered into. It is created once and reused for the
+  // lifetime of the component so that the marker's content is never torn down and rebuilt.
+  const element = useMemo(() => document.createElement('div'), [])
+
+  // Keeps the newest coordinates available to the creation effect without making it depend on
+  // them, so that a position change moves the existing marker instead of recreating it.
+  const coordinates = useRef<[number, number]>([longitude, latitude])
+
+  coordinates.current = [longitude, latitude]
 
   useEffect(() => {
-    let marker: maplibre.Marker
-    let newPopup: maplibre.Popup
-    let handleMarkerClick: (e: Event) => void
-
-    if (map && mapLoaded) {
-      // We create the DOM element that we will attach to the marker, and then
-      // render the `children` props into the DOM element.
-      const element = document.createElement('div')
-
-      setResult(ReactDOM.createPortal(children, element))
-
-      marker = new maplibre.Marker({ anchor, className, color, element })
-        .setLngLat([longitude, latitude])
-        .addTo(map)
-
-      if (popup) {
-        const popupHTML = ReactDOMServer.renderToStaticMarkup(popup)
-
-        handleMarkerClick = (e: Event) => {
-          e.stopPropagation()
-
-          newPopup = new maplibre.Popup({
-            offset: [0, -15],
-            closeButton,
-            closeOnClick,
-            className: popupClassName,
-          })
-            .setLngLat([longitude, latitude])
-            .setHTML(popupHTML)
-            .addTo(map)
-        }
-
-        marker.getElement().addEventListener('click', handleMarkerClick)
-      }
+    if (!map || !mapLoaded) {
+      return
     }
+
+    const newMarker = new maplibre.Marker({ anchor, className, color, element })
+      .setLngLat(coordinates.current)
+      .addTo(map)
+
+    setMarker(newMarker)
 
     return () => {
       try {
-        if (marker) {
-          marker.remove()
-        }
-
-        if (newPopup) {
-          newPopup.remove()
-        }
-
-        if (marker && handleMarkerClick) {
-          marker.getElement().removeEventListener('click', handleMarkerClick)
-        }
+        newMarker.remove()
       } catch {
         console.warn('Error cleaning up Marker')
       }
-    }
-  }, [
-    anchor,
-    className,
-    children,
-    color,
-    latitude,
-    longitude,
-    map,
-    popup,
-    popupClassName,
-    closeOnClick,
-    closeButton,
-    mapLoaded,
-  ])
 
-  return result
+      setMarker(null)
+    }
+  }, [anchor, className, color, element, map, mapLoaded])
+
+  useEffect(() => {
+    if (marker) {
+      marker.setLngLat([longitude, latitude])
+    }
+  }, [marker, latitude, longitude])
+
+  useEffect(() => {
+    if (!marker || !popup) {
+      return
+    }
+
+    const newPopup = new maplibre.Popup({
+      offset: [0, -15],
+      closeButton,
+      closeOnClick,
+      className: popupClassName,
+    }).setHTML(ReactDOMServer.renderToStaticMarkup(popup))
+
+    // Attaching the popup to the marker lets MapLibre toggle it on click and keep it anchored to
+    // the marker as the marker moves.
+    marker.setPopup(newPopup)
+
+    return () => {
+      try {
+        newPopup.remove()
+        marker.setPopup(undefined)
+      } catch {
+        console.warn('Error cleaning up Marker popup')
+      }
+    }
+  }, [marker, popup, popupClassName, closeButton, closeOnClick])
+
+  return createPortal(children, element)
 }
