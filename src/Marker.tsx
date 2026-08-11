@@ -25,6 +25,12 @@ export type MarkerProps = {
   popupClassName?: string
   closeOnClick?: boolean
   closeButton?: boolean
+  /**
+   * Lets the marker sit between whole pixels. MapLibre rounds a marker's position every time
+   * `setLngLat` is called, which keeps static markers crisp but makes a marker that is being
+   * animated move a whole pixel at a time.
+   */
+  subpixelPositioning?: boolean
 }
 
 export const Marker: FC<MarkerProps> = ({
@@ -38,6 +44,7 @@ export const Marker: FC<MarkerProps> = ({
   popupClassName,
   closeOnClick = false,
   closeButton = false,
+  subpixelPositioning = false,
 }) => {
   const { map, mapLoaded } = useContext(MapContext)
   const [marker, setMarker] = useState<maplibre.Marker | null>(null)
@@ -57,7 +64,13 @@ export const Marker: FC<MarkerProps> = ({
       return
     }
 
-    const newMarker = new maplibre.Marker({ anchor, className, color, element })
+    const newMarker = new maplibre.Marker({
+      anchor,
+      className,
+      color,
+      element,
+      subpixelPositioning,
+    })
       .setLngLat(coordinates.current)
       .addTo(map)
 
@@ -72,7 +85,7 @@ export const Marker: FC<MarkerProps> = ({
 
       setMarker(null)
     }
-  }, [anchor, className, color, element, map, mapLoaded])
+  }, [anchor, className, color, element, map, mapLoaded, subpixelPositioning])
 
   useEffect(() => {
     if (marker) {
