@@ -59,6 +59,16 @@ export const Marker: FC<MarkerProps> = ({
 
   coordinates.current = [longitude, latitude]
 
+  // The popup is compared by its rendered markup because the `popup` element has a new identity on
+  // every parent render.
+  const popupHtml = popup ? ReactDOMServer.renderToStaticMarkup(popup) : undefined
+  const hasPopup = popupHtml !== undefined
+  const popupHtmlRef = useRef<string | undefined>(popupHtml)
+  const popupInstance = useRef<maplibre.Popup | null>(null)
+  const appliedPopupHtml = useRef<string | undefined>(undefined)
+
+  popupHtmlRef.current = popupHtml
+
   useEffect(() => {
     if (!map || !mapLoaded) {
       return
@@ -94,7 +104,7 @@ export const Marker: FC<MarkerProps> = ({
   }, [marker, latitude, longitude])
 
   useEffect(() => {
-    if (!marker || !popup) {
+    if (!marker || !hasPopup) {
       return
     }
 
@@ -103,7 +113,10 @@ export const Marker: FC<MarkerProps> = ({
       closeButton,
       closeOnClick,
       className: popupClassName,
-    }).setHTML(ReactDOMServer.renderToStaticMarkup(popup))
+    }).setHTML(popupHtmlRef.current ?? '')
+
+    popupInstance.current = newPopup
+    appliedPopupHtml.current = popupHtmlRef.current
 
     // Attaching the popup to the marker lets MapLibre toggle it on click and keep it anchored to
     // the marker as the marker moves.
@@ -116,8 +129,21 @@ export const Marker: FC<MarkerProps> = ({
       } catch {
         console.warn('Error cleaning up Marker popup')
       }
+
+      popupInstance.current = null
+      appliedPopupHtml.current = undefined
     }
-  }, [marker, popup, popupClassName, closeButton, closeOnClick])
+  }, [marker, hasPopup, popupClassName, closeButton, closeOnClick])
+
+  // Updating the content in place keeps an open popup open across parent re-renders.
+  useEffect(() => {
+    const existingPopup = popupInstance.current
+
+    if (existingPopup && popupHtml !== undefined && popupHtml !== appliedPopupHtml.current) {
+      existingPopup.setHTML(popupHtml)
+      appliedPopupHtml.current = popupHtml
+    }
+  }, [popupHtml])
 
   return createPortal(children, element)
 }
