@@ -40,49 +40,48 @@ export class FakeMap extends Evented {
   sources = new Map<string, FakeSource>()
   layers = new Map<string, Record<string, unknown>>()
 
-  private style() {
+  private throwIfRemoved() {
     if (this._removed) {
       throw new TypeError("Cannot read properties of undefined (reading 'getSource')")
     }
   }
 
   getSource = vi.fn((id: string) => {
-    this.style()
+    this.throwIfRemoved()
 
     return this.sources.get(id)
   })
 
   getLayer = vi.fn((id: string) => {
-    this.style()
+    this.throwIfRemoved()
 
     return this.layers.get(id)
   })
 
   addSource = vi.fn((id: string, specification: { data: unknown }) => {
-    this.style()
+    this.throwIfRemoved()
     this.sources.set(id, new FakeSource(specification.data))
   })
 
   addLayer = vi.fn((layer: Record<string, unknown> & { id: string }) => {
-    this.style()
+    this.throwIfRemoved()
     this.layers.set(layer.id, layer)
   })
 
   removeLayer = vi.fn((id: string) => {
-    this.style()
+    this.throwIfRemoved()
     this.layers.delete(id)
   })
 
   removeSource = vi.fn((id: string) => {
-    this.style()
+    this.throwIfRemoved()
     this.sources.delete(id)
   })
 
-  setPaintProperty = vi.fn(() => this.style())
+  setPaintProperty = vi.fn(() => this.throwIfRemoved())
 
-  setLayoutProperty = vi.fn(() => this.style())
+  setLayoutProperty = vi.fn(() => this.throwIfRemoved())
 
-  /** Drops every source and layer, as a style swap does. */
   replaceStyle() {
     this.sources.clear()
     this.layers.clear()
@@ -129,10 +128,7 @@ export class FakePopup extends Evented {
   }
 }
 
-export const fakeMaplibreModule = {
-  default: { Popup: FakePopup, Map: FakeMap },
-  Popup: FakePopup,
-}
+export const fakeMaplibreModule = { default: { Popup: FakePopup } }
 
 // The components take a MapLibre map from context; the fake implements only what they call.
 export const asMap = (fake: FakeMap) => fake as unknown as maplibre.Map
