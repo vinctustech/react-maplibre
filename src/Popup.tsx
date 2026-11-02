@@ -11,6 +11,11 @@ export type PopupProps = {
   className?: string
   closeOnClick?: boolean
   closeButton?: boolean
+  /**
+   * Called when MapLibre closes the popup through its close button or a map click. The popup is
+   * not reopened by a later render, so the parent should stop rendering it here.
+   */
+  onClose?: () => void
 }
 
 export const Popup: FC<PopupProps> = ({
@@ -20,8 +25,12 @@ export const Popup: FC<PopupProps> = ({
   className,
   closeOnClick,
   closeButton,
+  onClose,
 }) => {
   const { map, mapLoaded } = useContext(MapContext)
+  const onCloseRef = useRef(onClose)
+
+  onCloseRef.current = onClose
 
   // The content is compared by its rendered markup because `children` has a new identity on every
   // parent render.
@@ -44,10 +53,15 @@ export const Popup: FC<PopupProps> = ({
       .setLngLat(coordinates)
       .setHTML(initialHtml)
       .addTo(map)
+    const handleClose = () => onCloseRef.current?.()
 
+    popup.on('close', handleClose)
     popupInstance.current = popup
 
     return () => {
+      // Removing the popup here also fires `close`, which is not a user closing it.
+      popup.off('close', handleClose)
+
       try {
         popup.remove()
       } catch {
