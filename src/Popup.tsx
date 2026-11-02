@@ -11,10 +11,7 @@ export type PopupProps = {
   className?: string
   closeOnClick?: boolean
   closeButton?: boolean
-  /**
-   * Called when MapLibre closes the popup through its close button or a map click. The popup is
-   * not reopened by a later render, so the parent should stop rendering it here.
-   */
+  /** Called when the user closes the popup; it is not reopened, so stop rendering it. */
   onClose?: () => void
 }
 
@@ -36,9 +33,10 @@ export const Popup: FC<PopupProps> = ({
   // parent render.
   const html = ReactDOMServer.renderToStaticMarkup(children)
 
-  // Keep the newest props available to the creation effect without making it depend on them, so
-  // that content and position changes update the existing popup instead of recreating it.
-  const latest = useRef({ html, coordinates: [longitude, latitude] as [number, number] })
+  const latest = useRef<{ html: string; coordinates: [number, number] }>({
+    html,
+    coordinates: [longitude, latitude],
+  })
   const popupInstance = useRef<maplibre.Popup | null>(null)
 
   latest.current = { html, coordinates: [longitude, latitude] }
@@ -53,8 +51,8 @@ export const Popup: FC<PopupProps> = ({
       .setLngLat(coordinates)
       .setHTML(initialHtml)
       .addTo(map)
-    // A popup also closes itself when its map is removed, such as when the map is rebuilt for a new
-    // style, and that is not a user closing it.
+
+    // MapLibre also fires close on unmount and when the map is removed; only a user close is reported.
     const handleClose = () => {
       if (!map._removed) {
         onCloseRef.current?.()
@@ -65,7 +63,6 @@ export const Popup: FC<PopupProps> = ({
     popupInstance.current = popup
 
     return () => {
-      // Removing the popup here also fires `close`, which is not a user closing it.
       popup.off('close', handleClose)
 
       try {

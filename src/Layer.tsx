@@ -82,8 +82,6 @@ export const Layer: FC<LayerProps> = ({ layer, source }) => {
     dataString,
   }
 
-  // Keeps the newest props available to the creation effect without making it depend on them, so
-  // that data, paint and layout changes update the existing source and layer in place.
   const latest = useRef(strings)
   const applied = useRef<AppliedLayer | null>(null)
 
@@ -118,8 +116,7 @@ export const Layer: FC<LayerProps> = ({ layer, source }) => {
   useEffect(() => {
     const current = applied.current
 
-    // A replaced map is removed before the context hands out the new one, so this effect can run
-    // once more against the removed map.
+    // The context can still hold a removed map for one commit.
     if (!map || !mapLoaded || !current || map._removed) {
       return
     }
