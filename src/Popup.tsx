@@ -53,7 +53,13 @@ export const Popup: FC<PopupProps> = ({
       .setLngLat(coordinates)
       .setHTML(initialHtml)
       .addTo(map)
-    const handleClose = () => onCloseRef.current?.()
+    // A popup also closes itself when its map is removed, such as when the map is rebuilt for a new
+    // style, and that is not a user closing it.
+    const handleClose = () => {
+      if (!map._removed) {
+        onCloseRef.current?.()
+      }
+    }
 
     popup.on('close', handleClose)
     popupInstance.current = popup
