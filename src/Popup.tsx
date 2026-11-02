@@ -31,7 +31,6 @@ export const Popup: FC<PopupProps> = ({
   // that content and position changes update the existing popup instead of recreating it.
   const latest = useRef({ html, coordinates: [longitude, latitude] as [number, number] })
   const popupInstance = useRef<maplibre.Popup | null>(null)
-  const applied = useRef<{ html: string; coordinates: [number, number] } | null>(null)
 
   latest.current = { html, coordinates: [longitude, latitude] }
 
@@ -47,7 +46,6 @@ export const Popup: FC<PopupProps> = ({
       .addTo(map)
 
     popupInstance.current = popup
-    applied.current = { html: initialHtml, coordinates }
 
     return () => {
       try {
@@ -57,32 +55,15 @@ export const Popup: FC<PopupProps> = ({
       }
 
       popupInstance.current = null
-      applied.current = null
     }
   }, [map, mapLoaded, className, closeOnClick, closeButton])
 
   useEffect(() => {
-    const popup = popupInstance.current
-    const current = applied.current
-
-    if (
-      popup &&
-      current &&
-      (current.coordinates[0] !== longitude || current.coordinates[1] !== latitude)
-    ) {
-      popup.setLngLat([longitude, latitude])
-      current.coordinates = [longitude, latitude]
-    }
+    popupInstance.current?.setLngLat([longitude, latitude])
   }, [longitude, latitude])
 
   useEffect(() => {
-    const popup = popupInstance.current
-    const current = applied.current
-
-    if (popup && current && current.html !== html) {
-      popup.setHTML(html)
-      current.html = html
-    }
+    popupInstance.current?.setHTML(html)
   }, [html])
 
   return null

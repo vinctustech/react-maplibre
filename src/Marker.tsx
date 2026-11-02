@@ -104,7 +104,9 @@ export const Marker: FC<MarkerProps> = ({
   }, [marker, latitude, longitude])
 
   useEffect(() => {
-    if (!marker || !hasPopup) {
+    const initialHtml = popupHtmlRef.current
+
+    if (!marker || initialHtml === undefined) {
       return
     }
 
@@ -113,10 +115,10 @@ export const Marker: FC<MarkerProps> = ({
       closeButton,
       closeOnClick,
       className: popupClassName,
-    }).setHTML(popupHtmlRef.current ?? '')
+    }).setHTML(initialHtml)
 
     popupInstance.current = newPopup
-    appliedPopupHtml.current = popupHtmlRef.current
+    appliedPopupHtml.current = initialHtml
 
     // Attaching the popup to the marker lets MapLibre toggle it on click and keep it anchored to
     // the marker as the marker moves.

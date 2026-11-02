@@ -69,15 +69,18 @@ export const Layer: FC<LayerProps> = ({ layer, source }) => {
   const { id } = layer
   const { paint, layout, ...layerStructure } = layer
   const { data, ...sourceOptions } = source
+  const layerStructureString = JSON.stringify(layerStructure)
+  const paintString = JSON.stringify(paint ?? {})
+  const layoutString = JSON.stringify(layout ?? {})
+  const sourceOptionsString = JSON.stringify(sourceOptions)
+  const dataString = JSON.stringify(data)
   const strings: LayerStrings = {
-    layerStructureString: JSON.stringify(layerStructure),
-    paintString: JSON.stringify(paint ?? {}),
-    layoutString: JSON.stringify(layout ?? {}),
-    sourceOptionsString: JSON.stringify(sourceOptions),
-    dataString: JSON.stringify(data),
+    layerStructureString,
+    paintString,
+    layoutString,
+    sourceOptionsString,
+    dataString,
   }
-  const { layerStructureString, paintString, layoutString, sourceOptionsString, dataString } =
-    strings
 
   // Keeps the newest props available to the creation effect without making it depend on them, so
   // that data, paint and layout changes update the existing source and layer in place.
@@ -141,9 +144,7 @@ export const Layer: FC<LayerProps> = ({ layer, source }) => {
     const nextPaint: Properties = JSON.parse(paintString)
     const nextLayout: Properties = JSON.parse(layoutString)
 
-    updateProperties(current.paint, nextPaint, (key, value) =>
-      map.setPaintProperty(id, key, value),
-    )
+    updateProperties(current.paint, nextPaint, (key, value) => map.setPaintProperty(id, key, value))
     updateProperties(current.layout, nextLayout, (key, value) =>
       map.setLayoutProperty(id, key, value),
     )
