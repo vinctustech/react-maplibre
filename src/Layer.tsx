@@ -118,7 +118,9 @@ export const Layer: FC<LayerProps> = ({ layer, source }) => {
   useEffect(() => {
     const current = applied.current
 
-    if (!map || !mapLoaded || !current) {
+    // A replaced map is removed before the context hands out the new one, so this effect can run
+    // once more against the removed map.
+    if (!map || !mapLoaded || !current || map._removed) {
       return
     }
 
